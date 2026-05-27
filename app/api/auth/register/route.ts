@@ -1,10 +1,11 @@
 import { syncPublicUserProfile } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { allowedEmailDomainMessage, hasAllowedEmailDomain } from '@/lib/email-validation'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 const schema = z.object({
-  email: z.string().email(),
+  email: z.string().email().refine(hasAllowedEmailDomain, allowedEmailDomainMessage),
   password: z.string().min(6),
   fullName: z.string().min(2),
 })

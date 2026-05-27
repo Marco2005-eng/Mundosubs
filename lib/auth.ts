@@ -19,15 +19,22 @@ export async function syncPublicUserProfile(input: {
 }) {
   const supabase = createAdminClient()
   const now = new Date().toISOString()
-  const role = normalizeRole(input.role)
   const fullName = input.fullName ?? ''
+
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('role, full_name')
+    .eq('id', input.id)
+    .maybeSingle()
+
+  const role = normalizeRole(input.role, existingProfile?.role)
 
   await supabase
     .from('profiles')
     .upsert({
       id: input.id,
       email: input.email.toLowerCase(),
-      full_name: fullName,
+      full_name: fullName || existingProfile?.full_name || '',
       role,
       updated_at: now,
     }, { onConflict: 'id' })

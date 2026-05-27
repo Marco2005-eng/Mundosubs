@@ -23,7 +23,7 @@ export async function GET(request: Request) {
         id: user.id,
         email: user.email,
         fullName: (metadata.full_name as string | undefined) ?? (metadata.name as string | undefined) ?? '',
-        role: metadata.role === 'admin' ? 'admin' : 'cliente',
+        role: metadata.role === 'admin' ? 'admin' : undefined,
       }).catch((syncError) => console.warn('Google callback profile sync failed:', syncError))
     }
   }

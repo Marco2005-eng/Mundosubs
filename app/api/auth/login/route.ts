@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       id: user.id,
       email: user.email,
       fullName: user.full_name,
-      role: user.role,
+      role: metadata.role === 'admin' ? 'admin' : undefined,
     }).catch((syncError) => console.warn('Login profile sync failed:', syncError))
 
     return NextResponse.json({ user })

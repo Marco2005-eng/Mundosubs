@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "email": "admin@mundosubs.pe",
+    "password": "Admin123!",
+    "name": "Administrador",
+    "role": "admin"
+  },
+  "test": {
+    "email": "test@mundosubs.pe",
+    "password": "Test123!",
+    "name": "Usuario Prueba",
+    "role": "user"
+  }
+}

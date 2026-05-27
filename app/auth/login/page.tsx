@@ -124,6 +124,11 @@ export default function LoginPage() {
                 <PasswordToggle visible={showPassword} onClick={() => setShowPassword((value) => !value)} />
               </div>
               {errors.password && <FieldError>{errors.password.message}</FieldError>}
+              <div style={{ textAlign: 'right', marginTop: '8px' }}>
+                <Link href="/auth/forgot-password" style={{ color: 'var(--accent2)', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 700 }}>
+                  Olvide mi contrasena
+                </Link>
+              </div>
             </div>
 
             {error && (

@@ -45,39 +45,39 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="auth-page" style={{ minHeight: '100vh', display: 'flex', background: 'var(--background)', padding: '20px' }}>
+    <div className="auth-page" style={{ minHeight: '100vh', display: 'flex', background: '#f6f8fc', padding: '20px' }}>
       <div className="auth-card" style={{
         width: '100%',
         maxWidth: 460,
         margin: 'auto',
-        background: 'var(--card)',
-        border: '1px solid var(--border2)',
+        background: '#ffffff',
+        border: '1px solid #d8e0ec',
         borderRadius: 16,
         padding: 28,
-        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.35)',
+        boxShadow: '0 22px 48px rgba(15, 23, 42, 0.12)',
       }}>
-        <Link href="/auth/login" style={{ color: 'var(--muted)', textDecoration: 'none', fontSize: '0.9rem' }}>
+        <Link href="/auth/login" style={{ color: '#52627a', textDecoration: 'none', fontSize: '0.9rem' }}>
           Volver a iniciar sesion
         </Link>
 
-        <h1 style={{ color: 'var(--text)', fontSize: '1.45rem', fontWeight: 800, margin: '24px 0 8px' }}>
+        <h1 style={{ color: '#0f172a', fontSize: '1.45rem', fontWeight: 800, margin: '24px 0 8px' }}>
           Recuperar contrasena
         </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '0.92rem', lineHeight: 1.5, marginBottom: 22 }}>
+        <p style={{ color: '#52627a', fontSize: '0.92rem', lineHeight: 1.5, marginBottom: 22 }}>
           Escribe tu correo y te enviaremos un enlace para crear una nueva contrasena.
         </p>
 
         {sent ? (
           <div style={{ display: 'grid', gap: 14, textAlign: 'center', padding: '18px 0' }}>
             <MailCheck style={{ width: 42, height: 42, color: 'var(--green)', margin: '0 auto' }} />
-            <strong style={{ color: 'var(--text)' }}>Revisa tu correo</strong>
-            <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.5 }}>
+            <strong style={{ color: '#0f172a' }}>Revisa tu correo</strong>
+            <p style={{ color: '#52627a', fontSize: '0.88rem', lineHeight: 1.5 }}>
               Si el correo esta registrado, recibiras un enlace para restablecer tu contrasena.
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: 14 }}>
-            <label style={{ display: 'grid', gap: 6, color: 'var(--text)', fontSize: '0.86rem', fontWeight: 700 }}>
+            <label style={{ display: 'grid', gap: 6, color: '#0f172a', fontSize: '0.86rem', fontWeight: 700 }}>
               Correo electronico
               <input
                 type="email"
@@ -85,6 +85,11 @@ export default function ForgotPasswordPage() {
                 className="input-dark"
                 placeholder="tu@correo.com"
                 autoComplete="email"
+                style={{
+                  background: '#eef3f9',
+                  border: '1px solid #ccd6e4',
+                  color: '#0f172a',
+                }}
               />
             </label>
             {errors.email && <p style={{ color: '#ef4444', fontSize: '0.78rem', margin: 0 }}>{errors.email.message}</p>}

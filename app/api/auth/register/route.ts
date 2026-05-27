@@ -23,6 +23,7 @@ export async function POST(req: Request) {
         data: {
           full_name: fullName,
           role: 'cliente',
+          password_set: true,
         },
       },
     })

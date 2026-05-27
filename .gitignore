@@ -32,3 +32,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local/editor/cache
+.vscode/
+__pycache__/
+*.pyc
+
+# local test data / old schema exports
+test-users.json
+sql-supabase.txt

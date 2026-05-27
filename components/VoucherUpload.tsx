@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/components/ui/use-toast'
-import { Upload, Loader2 } from 'lucide-react'
+import { Camera, FileText, ImagePlus, Upload, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
 const schema = z.object({
@@ -27,6 +28,9 @@ interface VoucherUploadProps {
 export function VoucherUpload({ orderId, paymentMethodLabel }: VoucherUploadProps) {
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
+  const imageInputRef = useRef<HTMLInputElement | null>(null)
+  const cameraInputRef = useRef<HTMLInputElement | null>(null)
+  const pdfInputRef = useRef<HTMLInputElement | null>(null)
   const { toast } = useToast()
   const router = useRouter()
 
@@ -95,13 +99,83 @@ export function VoucherUpload({ orderId, paymentMethodLabel }: VoucherUploadProp
         )}
       </div>
 
-      <div className="space-y-1">
-        <Label>Comprobante (imagen o PDF)</Label>
-        <Input
+      <div className="space-y-2">
+        <Label>Comprobante de pago</Label>
+        <input
+          ref={imageInputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp,application/pdf"
+          accept="image/*"
+          className="sr-only"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         />
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="sr-only"
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        />
+        <input
+          ref={pdfInputRef}
+          type="file"
+          accept="application/pdf"
+          className="sr-only"
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        />
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => imageInputRef.current?.click()}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold"
+            style={{
+              borderColor: 'var(--border2)',
+              background: 'var(--bg3)',
+              color: 'var(--text)',
+            }}
+          >
+            <ImagePlus className="h-4 w-4" />
+            Elegir de galeria
+          </button>
+          <button
+            type="button"
+            onClick={() => cameraInputRef.current?.click()}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-semibold"
+            style={{
+              borderColor: 'var(--border2)',
+              background: 'var(--bg3)',
+              color: 'var(--text)',
+            }}
+          >
+            <Camera className="h-4 w-4" />
+            Tomar foto
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => pdfInputRef.current?.click()}
+          className="inline-flex items-center gap-2 text-xs font-semibold"
+          style={{ color: 'var(--muted)' }}
+        >
+          <FileText className="h-3.5 w-3.5" />
+          Subir PDF en su lugar
+        </button>
+
+        {file && (
+          <div
+            className="rounded-md px-3 py-2 text-xs"
+            style={{
+              background: 'var(--bg2)',
+              border: '1px solid var(--border2)',
+              color: 'var(--muted)',
+            }}
+          >
+            Archivo seleccionado:{' '}
+            <strong style={{ color: 'var(--text)' }}>{file.name}</strong>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-2 sm:grid-cols-2">

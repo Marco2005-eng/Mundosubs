@@ -11,26 +11,51 @@ export default async function HistoryPage() {
   if (!user) redirect('/auth/login')
   const supabase = createServiceClient()
 
-  const { data: orders } = await supabase
+  const { data: orders, error: ordersError } = await supabase
     .from('orders')
     .select(`
-      id, created_at, amount, original_amount, discount_pct, status,
-      products(name, category),
-      subscriptions(expires_at)
+      id,
+      created_at,
+      amount,
+      original_amount,
+      discount_pct,
+      status,
+      order_type,
+      products(name, category)
     `)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  const rows = (orders ?? []).map((o: any) => ({
-    id: o.id,
-    created_at: o.created_at,
-    product_name: o.products?.name ?? '—',
-    category: o.products?.category ?? '—',
-    original_amount: o.original_amount,
-    discount_pct: o.discount_pct,
-    amount: o.amount,
-    status: o.status,
-    expires_at: o.subscriptions?.[0]?.expires_at ?? null,
+  if (ordersError) {
+    console.error('Purchase history orders error:', ordersError)
+  }
+
+  const orderIds = (orders ?? []).map((order: any) => order.id)
+  const { data: subscriptions, error: subscriptionsError } = orderIds.length
+    ? await supabase
+      .from('subscriptions')
+      .select('order_id, expires_at')
+      .in('order_id', orderIds)
+    : { data: [], error: null }
+
+  if (subscriptionsError) {
+    console.error('Purchase history subscriptions error:', subscriptionsError)
+  }
+
+  const subscriptionByOrder = new Map(
+    (subscriptions ?? []).map((subscription: any) => [subscription.order_id, subscription])
+  )
+
+  const rows = (orders ?? []).map((order: any) => ({
+    id: order.id,
+    created_at: order.created_at,
+    product_name: `${order.order_type === 'renewal' ? 'Renovacion - ' : ''}${order.products?.name ?? 'Producto'}`,
+    category: order.products?.category ?? '-',
+    original_amount: order.original_amount,
+    discount_pct: order.discount_pct,
+    amount: order.amount,
+    status: order.status,
+    expires_at: subscriptionByOrder.get(order.id)?.expires_at ?? null,
   }))
 
   return (

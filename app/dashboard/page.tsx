@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { SubscriptionStatus } from '@/components/SubscriptionStatus'
 import { DiscountBadge } from '@/components/DiscountBadge'
 import { AccessDetailsList } from '@/components/AccessDetailsList'
+import { RenewSubscriptionButton } from '@/components/RenewSubscriptionButton'
 import Link from 'next/link'
 import { ArrowRight, Plus, History, User, Upload, Clock } from 'lucide-react'
 import { getSession } from '@/lib/auth'
@@ -26,10 +27,11 @@ export default async function DashboardPage() {
   }
 
   const subList = subscriptions ?? []
+  const now = new Date()
 
   const { data: pendingOrders } = await supabase
     .from('orders')
-    .select('id, created_at, amount, products(name, category)')
+    .select('id, created_at, amount, order_type, products(name, category)')
     .eq('user_id', user.id)
     .eq('status', 'pending')
     .order('created_at', { ascending: false })
@@ -197,7 +199,7 @@ export default async function DashboardPage() {
                   </div>
                   <div>
                     <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: '0.95rem' }}>
-                      {order.products?.name || 'Pedido pendiente'}
+                      {order.order_type === 'renewal' ? 'Renovacion' : 'Pedido'}: {order.products?.name || 'Pedido pendiente'}
                     </div>
                     <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
                       {formatPEN(order.amount)} · Pedido #{order.id.slice(0, 8)}
@@ -299,19 +301,30 @@ export default async function DashboardPage() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
             gap: '16px'
           }}>
-            {subscriptions.map((sub) => (
+            {subscriptions.map((sub) => {
+              const expiresAt = new Date(sub.expires_at)
+              const daysLeft = Math.ceil((expiresAt.getTime() - now.getTime()) / 86400000)
+              const isExpired = daysLeft < 0
+              const isExpiringSoon = daysLeft >= 0 && daysLeft <= 5
+
+              return (
               <div key={sub.id} style={{
                 background: 'var(--card)',
-                border: '1px solid var(--border2)',
+                border: isExpired
+                  ? '1px solid rgba(239,68,68,0.32)'
+                  : isExpiringSoon
+                    ? '1px solid rgba(249,115,22,0.36)'
+                    : '1px solid var(--border2)',
                 borderRadius: '12px',
                 padding: '20px',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                display: 'grid',
+                gap: '14px'
               }}>
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginBottom: '12px'
                 }}>
                   <span style={{
                     fontSize: '9px',
@@ -327,22 +340,52 @@ export default async function DashboardPage() {
                   </span>
                   <SubscriptionStatus expiresAt={sub.expires_at} />
                 </div>
-                <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  color: 'var(--text)',
-                  marginBottom: '4px'
+                <div>
+                  <h3 style={{
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    color: 'var(--text)',
+                    marginBottom: '4px'
+                  }}>
+                    {(sub as any).products?.name}
+                  </h3>
+                  <p style={{
+                    fontSize: '0.8rem',
+                    color: 'var(--muted)'
+                  }}>
+                    {(sub as any).products?.category}
+                  </p>
+                </div>
+
+                <div style={{
+                  borderRadius: '10px',
+                  background: isExpired ? 'rgba(239,68,68,0.08)' : isExpiringSoon ? 'rgba(249,115,22,0.09)' : 'var(--bg2)',
+                  border: '1px solid var(--border2)',
+                  padding: '10px 12px',
+                  display: 'grid',
+                  gap: '4px'
                 }}>
-                  {(sub as any).products?.name}
-                </h3>
-                <p style={{
-                  fontSize: '0.8rem',
-                  color: 'var(--muted)'
-                }}>
-                  {(sub as any).products?.category}
-                </p>
+                  <span style={{ color: 'var(--text)', fontSize: '0.8rem', fontWeight: 800 }}>
+                    {isExpired
+                      ? 'Suscripcion vencida'
+                      : isExpiringSoon
+                        ? `Vence en ${daysLeft === 0 ? 'hoy' : `${daysLeft} dia${daysLeft === 1 ? '' : 's'}`}`
+                        : `Activa hasta ${expiresAt.toLocaleDateString('es-PE')}`}
+                  </span>
+                  <span style={{ color: 'var(--muted)', fontSize: '0.74rem' }}>
+                    {isExpired
+                      ? 'Puedes reactivarla creando un nuevo pago.'
+                      : 'Si renuevas antes de vencer, conservas los dias restantes.'}
+                  </span>
+                </div>
+
+                <RenewSubscriptionButton
+                  subscriptionId={sub.id}
+                  label={isExpired ? 'Reactivar' : 'Renovar'}
+                />
               </div>
-            ))}
+              )
+            })}
           </div>
         )}
 </div>

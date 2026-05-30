@@ -342,6 +342,8 @@ create table public.orders (
   discount_id uuid references public.discounts(id) on delete set null,
   coupon_id uuid references public.coupons(id) on delete set null,
   discount_pct numeric(5,2) not null default 0 check (discount_pct >= 0 and discount_pct <= 100),
+  order_type text not null default 'new' check (order_type in ('new', 'renewal')),
+  renewed_subscription_id uuid,
   status public.order_status not null default 'pending',
   admin_note text,
   reviewed_by uuid references auth.users(id) on delete set null,
@@ -384,6 +386,12 @@ create table public.subscriptions (
 );
 
 create index idx_subscriptions_user_expires on public.subscriptions(user_id, expires_at desc);
+
+alter table public.orders
+  add constraint orders_renewed_subscription_id_fkey
+  foreign key (renewed_subscription_id) references public.subscriptions(id) on delete set null;
+
+create index idx_orders_renewed_subscription on public.orders(renewed_subscription_id);
 
 create table public.subscription_access (
   id uuid primary key default gen_random_uuid(),

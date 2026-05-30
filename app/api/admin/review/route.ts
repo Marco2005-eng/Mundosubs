@@ -65,18 +65,51 @@ export async function POST(req: NextRequest) {
       if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
 
       const durationDays = (order as any).products?.duration_days ?? 30
-      const expiresAt = new Date(Date.now() + durationDays * 86400000).toISOString()
+      let expiresAt = new Date(Date.now() + durationDays * 86400000).toISOString()
+      let subscription: { id: string } | null = null
 
-      const { data: subscription, error: subscriptionError } = await serviceSupabase.from('subscriptions').insert({
-        user_id: order.user_id,
-        product_id: order.product_id,
-        order_id: orderId,
-        starts_at: now,
-        expires_at: expiresAt,
-      }).select('id').single()
+      if (order.renewed_subscription_id) {
+        const { data: currentSubscription, error: currentSubscriptionError } = await serviceSupabase
+          .from('subscriptions')
+          .select('id, expires_at')
+          .eq('id', order.renewed_subscription_id)
+          .eq('user_id', order.user_id)
+          .single()
 
-      if (subscriptionError) {
-        return NextResponse.json({ error: subscriptionError.message }, { status: 500 })
+        if (currentSubscriptionError || !currentSubscription) {
+          return NextResponse.json({ error: currentSubscriptionError?.message || 'Suscripcion a renovar no encontrada' }, { status: 500 })
+        }
+
+        const currentExpiryMs = new Date(currentSubscription.expires_at).getTime()
+        const baseMs = Math.max(currentExpiryMs, Date.now())
+        expiresAt = new Date(baseMs + durationDays * 86400000).toISOString()
+
+        const { data: renewedSubscription, error: renewalError } = await serviceSupabase
+          .from('subscriptions')
+          .update({ expires_at: expiresAt })
+          .eq('id', currentSubscription.id)
+          .select('id')
+          .single()
+
+        if (renewalError) {
+          return NextResponse.json({ error: renewalError.message }, { status: 500 })
+        }
+
+        subscription = renewedSubscription
+      } else {
+        const { data: newSubscription, error: subscriptionError } = await serviceSupabase.from('subscriptions').insert({
+          user_id: order.user_id,
+          product_id: order.product_id,
+          order_id: orderId,
+          starts_at: now,
+          expires_at: expiresAt,
+        }).select('id').single()
+
+        if (subscriptionError) {
+          return NextResponse.json({ error: subscriptionError.message }, { status: 500 })
+        }
+
+        subscription = newSubscription
       }
 
       if (access && Object.values(access).some(Boolean)) {

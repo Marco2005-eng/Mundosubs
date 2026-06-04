@@ -3,6 +3,14 @@ import { updateSession } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  if (request.nextUrl.hostname === 'mundosubs.vercel.app') {
+    const canonicalUrl = request.nextUrl.clone()
+    canonicalUrl.hostname = 'mundosubs.net.pe'
+    canonicalUrl.protocol = 'https:'
+    return NextResponse.redirect(canonicalUrl, 308)
+  }
+
   const { supabaseResponse, user } = await updateSession(request)
 
   const isPublicRoute =

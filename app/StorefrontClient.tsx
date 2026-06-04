@@ -1,15 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { Search, ShoppingCart, Star } from 'lucide-react'
 import { useCartStore } from '@/store/cart'
 import type { Product } from '@/components/ProductCard'
+import { ProductModal } from '@/components/ProductModal'
 import { useToast } from '@/components/ui/use-toast'
-import { Search } from 'lucide-react'
 
 const CATEGORY_LABELS: Record<string, string> = {
   streaming: 'Streaming',
   game: 'Juegos',
-  license: 'Licencia',
+  license: 'Licencias',
   software: 'Software',
   music: 'Musica',
 }
@@ -33,311 +34,207 @@ export function StorefrontClient({
 }) {
   const [category, setCategory] = useState(initialCategory ?? '')
   const [query, setQuery] = useState(initialQuery ?? '')
+  const [selectedProduct, setSelectedProduct] = useState<ResolvedProduct | null>(null)
   const { addItem } = useCartStore()
   const { toast } = useToast()
 
-  const filtered = items.filter(item => {
-    if (category && item.product.category !== category) return false
-    if (query && !item.product.name.toLowerCase().includes(query.toLowerCase())) return false
-    return true
-  })
+  const filtered = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase()
+    return items.filter(({ product }) => {
+      if (category && product.category !== category) return false
+      if (normalizedQuery && !product.name.toLowerCase().includes(normalizedQuery)) return false
+      return true
+    })
+  }, [category, items, query])
 
-  const transitionKey = `${category || 'all'}-${query}-${filtered.length}`
+  const hasFilter = Boolean(category || query.trim())
+  const highlighted = useMemo(() => {
+    const discounted = items.filter((item) => item.discountPct > 0)
+    const source = discounted.length ? discounted : items
+    return source.slice(0, 4)
+  }, [items])
 
-  function handleCategory(cat: string) {
-    setCategory(cat)
+  const grouped = useMemo(() => {
+    return categories
+      .map((cat) => ({
+        category: cat,
+        label: CATEGORY_LABELS[cat] ?? cat,
+        items: items.filter(({ product }) => product.category === cat).slice(0, 6),
+      }))
+      .filter((group) => group.items.length > 0)
+  }, [categories, items])
+
+  function updateUrl(nextCategory: string, nextQuery: string) {
     const url = new URL(window.location.href)
-    if (cat) url.searchParams.set('category', cat)
+    if (nextCategory) url.searchParams.set('category', nextCategory)
     else url.searchParams.delete('category')
-    if (query) url.searchParams.set('q', query)
+    if (nextQuery) url.searchParams.set('q', nextQuery)
     else url.searchParams.delete('q')
     window.history.replaceState({}, '', url.toString())
   }
 
-  function handleSearch(val: string) {
-    setQuery(val)
-    const url = new URL(window.location.href)
-    if (val) url.searchParams.set('q', val)
-    else url.searchParams.delete('q')
-    if (category) url.searchParams.set('category', category)
-    else url.searchParams.delete('category')
-    window.history.replaceState({}, '', url.toString())
+  function handleCategory(cat: string) {
+    const next = category === cat ? '' : cat
+    setCategory(next)
+    updateUrl(next, query)
+  }
+
+  function handleSearch(value: string) {
+    setQuery(value)
+    updateUrl(category, value)
   }
 
   function handleAddToCart(product: Product, discountPct: number) {
     addItem(product, discountPct)
     toast({
-      title: '✓ Agregado al carrito',
-      description: product.name,
-      duration: 2000,
+      title: 'Agregado al carrito',
+      description: `${product.name} ya esta listo para pagar.`,
+      duration: 1800,
     })
   }
 
+  function renderProductCard(item: ResolvedProduct, index = 0) {
+    const { product, discountPct } = item
+    const finalPrice = product.price * (1 - discountPct / 100)
+
+    return (
+      <article
+        key={product.id}
+        className="catalog-product-card"
+        style={{ animationDelay: `${Math.min(index * 35, 180)}ms` }}
+      >
+        <button type="button" className="catalog-card-main" onClick={() => setSelectedProduct(item)}>
+          <div className="catalog-card-media">
+            <span className="catalog-card-category">{CATEGORY_LABELS[product.category] ?? product.category}</span>
+            {product.image_url ? (
+              <div className="catalog-card-logo">
+                <img src={product.image_url} alt={`${product.name} logo`} loading="lazy" referrerPolicy="no-referrer" />
+              </div>
+            ) : (
+              <div className="catalog-card-fallback">{product.name.slice(0, 2).toUpperCase()}</div>
+            )}
+          </div>
+
+          <div className="catalog-card-content">
+            <h3>{product.name}</h3>
+            <p>{product.features?.slice(0, 2).join(', ') || 'Acceso digital con entrega revisada.'}</p>
+            <div className="catalog-card-badges">
+              <span>{product.duration_days} dias</span>
+              {discountPct > 0 && <span className="catalog-discount">-{discountPct}%</span>}
+            </div>
+          </div>
+        </button>
+
+        <div className="catalog-card-footer">
+          <div>
+            <strong>S/{finalPrice.toFixed(2)}</strong>
+            {discountPct > 0 && <span>S/{product.price.toFixed(2)}</span>}
+          </div>
+          <button type="button" onClick={() => handleAddToCart(product, discountPct)}>
+            <ShoppingCart aria-hidden="true" />
+            Agregar
+          </button>
+        </div>
+      </article>
+    )
+  }
+
   return (
-    <>
-      <div className="catalog-controls" style={{
-        display: 'flex',
-        gap: '12px',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        marginBottom: '28px',
-      }}>
-        <div className="catalog-search" style={{ flex: '1', minWidth: '220px', position: 'relative' }}>
-          <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.35, color: 'var(--muted)' }} />
+    <div className="catalog-experience">
+      <section className="catalog-toolbar" aria-label="Buscar y filtrar servicios">
+        <div className="catalog-search">
+          <Search aria-hidden="true" />
           <input
             type="text"
-            placeholder="Buscar servicio..."
+            placeholder="Buscar Netflix, Disney, Spotify..."
             value={query}
-            onChange={e => handleSearch(e.target.value)}
-            className="input-dark"
-            style={{ width: '100%', paddingLeft: '38px' }}
+            onChange={(event) => handleSearch(event.target.value)}
           />
         </div>
 
-        <div className="category-strip" style={{ display: 'flex', gap: '7px', flexWrap: 'wrap' }}>
-          <button
-            onClick={() => handleCategory('')}
-            style={{
-              background: !category ? 'rgba(124,58,237,0.15)' : 'var(--bg3)',
-              border: '1px solid var(--border2)',
-              color: !category ? 'var(--accent2)' : 'var(--muted)',
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: '0.8rem',
-              fontWeight: 500,
-              padding: '8px 16px',
-              borderRadius: '20px',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-          >
+        <div className="category-strip">
+          <button type="button" className={!category ? 'active' : ''} onClick={() => handleCategory('')}>
             Todos
           </button>
-          {categories.map(cat => (
+          {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => handleCategory(category === cat ? '' : cat)}
-              style={{
-                background: category === cat ? 'rgba(124,58,237,0.15)' : 'var(--bg3)',
-                border: '1px solid var(--border2)',
-                color: category === cat ? 'var(--accent2)' : 'var(--muted)',
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: '0.8rem',
-                fontWeight: 500,
-                padding: '8px 16px',
-                borderRadius: '20px',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                textTransform: 'capitalize',
-              }}
+              type="button"
+              className={category === cat ? 'active' : ''}
+              onClick={() => handleCategory(cat)}
             >
-              {cat}
+              {CATEGORY_LABELS[cat] ?? cat}
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div key={transitionKey} className="product-grid" style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(245px, 1fr))',
-        gap: '18px',
-        animation: 'catalogGridEnter 360ms cubic-bezier(.2,.8,.2,1)',
-      }}>
-        {filtered.map(({ product, discountPct }, index) => (
-          <div
-            key={product.id}
-            className="card product-card"
-            style={{
-              background: 'var(--card)',
-              border: '1px solid var(--border2)',
-              borderRadius: '12px',
-              overflow: 'hidden',
-              cursor: 'pointer',
-              transition: 'transform 0.25s, border-color 0.25s, box-shadow 0.25s',
-              position: 'relative',
-              opacity: 0,
-              animation: 'catalogCardEnter 420ms cubic-bezier(.2,.8,.2,1) forwards',
-              animationDelay: `${Math.min(index * 45, 270)}ms`,
-            }}
-          >
-            <div className="product-card-media" style={{
-              height: '152px',
-              position: 'relative',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontFamily: "'Unbounded', sans-serif",
-              fontSize: '1.22rem',
-              fontWeight: 700,
-              color: 'var(--text)',
-              letterSpacing: 0,
-              background: product.image_url
-                ? 'linear-gradient(135deg, rgba(248,250,252,0.98), rgba(241,245,249,0.94))'
-                : 'linear-gradient(135deg, var(--accent), var(--hot))',
-            }}>
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: product.image_url
-                  ? 'radial-gradient(circle at 50% 42%, rgba(124,58,237,0.14), transparent 56%)'
-                  : 'linear-gradient(to bottom, transparent 34%, rgba(15,15,26,0.86))',
-              }} />
-              {product.image_url ? (
-                <div
-                  style={{
-                    width: '112px',
-                    height: '112px',
-                    borderRadius: '22px',
-                    background: '#ffffff',
-                    border: '1px solid rgba(148,163,184,0.24)',
-                    display: 'grid',
-                    placeItems: 'center',
-                    padding: '16px',
-                    boxShadow: '0 18px 42px rgba(15,23,42,0.16)',
-                    zIndex: 1,
-                  }}
-                >
-                  <img
-                    src={product.image_url}
-                    alt={`${product.name} logo`}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain',
-                    }}
-                  />
-                </div>
-              ) : (
-                <div style={{
-                  width: '96px',
-                  height: '96px',
-                  borderRadius: '22px',
-                  display: 'grid',
-                  placeItems: 'center',
-                  background: 'rgba(255,255,255,0.13)',
-                  border: '1px solid rgba(255,255,255,0.18)',
-                  color: 'white',
-                  boxShadow: '0 18px 42px rgba(15,15,26,0.24)',
-                  zIndex: 1,
-                }}>
-                  {product.name.slice(0, 2).toUpperCase()}
-                </div>
-              )}
-              <span style={{
-                position: 'absolute',
-                top: '12px',
-                left: '12px',
-                zIndex: 2,
-                fontSize: '0.66rem',
-                fontWeight: 700,
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                padding: '5px 10px',
-                borderRadius: '999px',
-                background: product.image_url ? 'rgba(15,23,42,0.08)' : 'rgba(0,0,0,0.52)',
-                color: product.image_url ? 'var(--text)' : 'rgba(255,255,255,0.88)',
-              }}>
-                {CATEGORY_LABELS[product.category] ?? product.category}
-              </span>
+      {hasFilter ? (
+        <section className="catalog-section">
+          <div className="catalog-section-header">
+            <div>
+              <span>{filtered.length} resultados</span>
+              <h2>{category ? CATEGORY_LABELS[category] ?? category : 'Busqueda'}</h2>
             </div>
+          </div>
+          <div className="catalog-grid">
+            {filtered.map((item, index) => renderProductCard(item, index))}
+          </div>
+          {filtered.length === 0 && <EmptyCatalog />}
+        </section>
+      ) : (
+        <>
+          <section className="catalog-section catalog-featured">
+            <div className="catalog-section-header">
+              <div>
+                <span>Recomendados</span>
+                <h2>Servicios para empezar hoy</h2>
+              </div>
+              <Star aria-hidden="true" />
+            </div>
+            <div className="catalog-grid catalog-grid-featured">
+              {highlighted.map((item, index) => renderProductCard(item, index))}
+            </div>
+          </section>
 
-            <div className="product-card-body" style={{ padding: '16px' }}>
-              <h3 style={{
-                fontSize: '1.02rem',
-                fontWeight: 800,
-                marginBottom: '6px',
-                letterSpacing: 0,
-                color: 'var(--text)',
-                lineHeight: 1.25,
-              }}>
-                {product.name}
-              </h3>
-              <p style={{
-                fontSize: '0.78rem',
-                color: 'var(--muted)',
-                lineHeight: 1.5,
-                marginBottom: '10px',
-              }}>
-                {product.features?.slice(0, 2).join(', ')}
-              </p>
-
-              <span style={{
-                display: 'inline-block',
-                margin: '10px 0',
-                fontSize: '0.72rem',
-                fontWeight: 600,
-                color: 'var(--accent2)',
-                background: 'rgba(168,85,247,0.1)',
-                border: '1px solid rgba(168,85,247,0.2)',
-                padding: '2px 9px',
-                borderRadius: '5px',
-              }}>
-                {product.duration_days} días de acceso
-              </span>
-
-              {discountPct > 0 && (
-                <span style={{
-                  display: 'inline-block',
-                  marginLeft: '8px',
-                  fontSize: '0.72rem',
-                  fontWeight: 600,
-                  color: 'var(--green)',
-                  background: 'rgba(34,197,94,0.1)',
-                  border: '1px solid rgba(34,197,94,0.2)',
-                  padding: '2px 9px',
-                  borderRadius: '5px',
-                }}>
-                  -{discountPct}% OFF
-                </span>
-              )}
-
-              <div className="product-card-footer" style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                borderTop: '1px solid var(--border2)',
-                paddingTop: '13px',
-                marginTop: '12px',
-              }}>
-                <div style={{
-                  fontFamily: "'Unbounded', sans-serif",
-                  fontSize: '1.25rem',
-                  fontWeight: 700,
-                  color: 'var(--green)',
-                }}>
-                  S/{product.price.toFixed(2)}
+          {grouped.map((group) => (
+            <section key={group.category} className="catalog-section">
+              <div className="catalog-section-header">
+                <div>
+                  <span>{group.items.length} servicios</span>
+                  <h2>{group.label}</h2>
                 </div>
-                <button
-                  onClick={() => handleAddToCart(product, discountPct)}
-                  className="btn-add"
-                  style={{
-                    background: 'rgba(34,197,94,0.12)',
-                    border: '1px solid rgba(34,197,94,0.25)',
-                    color: 'var(--green)',
-                    fontFamily: "'Space Grotesk', sans-serif",
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    padding: '7px 13px',
-                    borderRadius: '7px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  Agregar
+                <button type="button" onClick={() => handleCategory(group.category)}>
+                  Ver categoria
                 </button>
               </div>
-            </div>
-          </div>
-        ))}
+              <div className="catalog-grid">
+                {group.items.map((item, index) => renderProductCard(item, index))}
+              </div>
+            </section>
+          ))}
+        </>
+      )}
 
-        {filtered.length === 0 && (
-          <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 20px', color: 'var(--muted)' }}>
-            No hay productos disponibles.
-          </div>
-        )}
-      </div>
-    </>
+      {selectedProduct && (
+        <ProductModal
+          product={selectedProduct.product}
+          discountPct={selectedProduct.discountPct}
+          discountLabel={selectedProduct.discountLabel}
+          open={Boolean(selectedProduct)}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={(product, discountPct) => handleAddToCart(product, discountPct)}
+        />
+      )}
+    </div>
+  )
+}
+
+function EmptyCatalog() {
+  return (
+    <div className="catalog-empty">
+      <h3>No encontramos servicios con ese filtro</h3>
+      <p>Prueba buscando por nombre o cambia la categoria.</p>
+    </div>
   )
 }

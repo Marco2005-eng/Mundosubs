@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { CartDrawerWrapper } from '@/app/CartDrawerWrapper'
-import { LogIn, LogOut, Menu, X, Home, User, Settings, Crown, History } from 'lucide-react'
+import { SiteFooter } from '@/components/SiteFooter'
+import { LogIn, LogOut, Menu, X, Home, User, Settings, Crown, History, Info } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 interface User {
@@ -59,6 +60,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const isAdmin = user?.role === 'admin'
   const isAuthPage = pathname?.startsWith('/auth/') || false
+  const isAdminPage = pathname?.startsWith('/admin') || false
 
   const handleSignOut = async () => {
     console.log('Cerrando sesión...')
@@ -76,7 +78,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const showHeader = !isAuthPage
 
   const navItems = [
-    { href: '/', label: 'Catálogo', icon: Home },
+    { href: '/', label: 'Catalogo', icon: Home },
+    { href: '/nosotros', label: 'Nosotros', icon: Info },
     ...(user ? [
       { href: '/dashboard', label: 'Mi cuenta', icon: User },
       { href: '/dashboard/history', label: 'Historial', icon: History },
@@ -341,6 +344,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main className="app-main" style={{ padding: '30px 5%', maxWidth: '1200px', margin: '0 auto' }}>
         {children}
       </main>
+      {showHeader && !isAdminPage && <SiteFooter />}
 
       <style>{`
         @media (max-width: 768px) {
@@ -372,3 +376,4 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   )
 }
+

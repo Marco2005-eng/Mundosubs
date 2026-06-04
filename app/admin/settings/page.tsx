@@ -1,32 +1,52 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { ArrowLeft, Loader2, Save, Settings, Phone, Mail, Building } from 'lucide-react'
+import { ArrowLeft, Building, Facebook, Image, Loader2, Mail, MessageCircle, Music2, Save, Settings, Trash2, Upload } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
-type SettingKey = 'whatsapp_number' | 'business_name' | 'contact_email'
-const SETTINGS_KEYS: SettingKey[] = ['whatsapp_number', 'business_name', 'contact_email']
+type SettingKey =
+  | 'whatsapp_number'
+  | 'business_name'
+  | 'contact_email'
+  | 'facebook_url'
+  | 'tiktok_url'
+  | 'footer_tagline'
+  | 'about_title'
+  | 'about_summary'
+  | 'about_history'
+  | 'about_images'
 
-const LABELS: Record<SettingKey, string> = {
-  whatsapp_number: 'Número de WhatsApp',
-  business_name: 'Nombre del negocio',
-  contact_email: 'Email de contacto',
-}
+const SETTINGS_KEYS: SettingKey[] = [
+  'whatsapp_number',
+  'business_name',
+  'contact_email',
+  'facebook_url',
+  'tiktok_url',
+  'footer_tagline',
+  'about_title',
+  'about_summary',
+  'about_history',
+  'about_images',
+]
 
-const ICONS: Record<SettingKey, any> = {
-  whatsapp_number: Phone,
-  business_name: Building,
-  contact_email: Mail,
+const DEFAULT_VALUES: Record<SettingKey, string> = {
+  whatsapp_number: '',
+  business_name: 'MUNDOSUBS',
+  contact_email: '',
+  facebook_url: '',
+  tiktok_url: '',
+  footer_tagline: 'Suscripciones digitales en soles, sin tarjeta internacional.',
+  about_title: 'Quienes somos',
+  about_summary: 'Somos una tienda peruana de suscripciones digitales pensada para comprar en soles y recibir soporte directo.',
+  about_history: '',
+  about_images: '',
 }
 
 export default function AdminSettingsPage() {
-  const [values, setValues] = useState<Record<SettingKey, string>>({
-    whatsapp_number: '',
-    business_name: '',
-    contact_email: '',
-  })
+  const [values, setValues] = useState<Record<SettingKey, string>>(DEFAULT_VALUES)
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
@@ -34,143 +54,253 @@ export default function AdminSettingsPage() {
     supabase
       .from('settings')
       .select('key, value')
-      .in('key', [...SETTINGS_KEYS])
+      .in('key', SETTINGS_KEYS)
       .then(({ data }) => {
         if (!data) return
-        const map = Object.fromEntries(data.map((r) => [r.key, r.value])) as Record<SettingKey, string>
+        const map = Object.fromEntries(data.map((item) => [item.key, item.value ?? '']))
         setValues((prev) => ({ ...prev, ...map }))
       })
   }, [])
 
-  async function handleSave() {
-    setLoading(true)
-    const supabase = createClient()
-    for (const [key, value] of Object.entries(values)) {
-      await supabase.from('settings').upsert({ key, value }, { onConflict: 'key' })
-    }
-    setLoading(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+  function updateValue(key: SettingKey, value: string) {
+    setValues((prev) => ({ ...prev, [key]: value }))
   }
 
+  async function handleSave() {
+    setLoading(true)
+    setSaved(false)
+
+    const supabase = createClient()
+    const rows = SETTINGS_KEYS.map((key) => ({ key, value: values[key] ?? '' }))
+    const { error } = await supabase.from('settings').upsert(rows, { onConflict: 'key' })
+
+    setLoading(false)
+    if (!error) {
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    }
+  }
+
+  async function handleImageUpload(files: FileList | null) {
+    if (!files?.length) return
+    setUploading(true)
+
+    const supabase = createClient()
+    const uploadedUrls: string[] = []
+
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/')) continue
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `about/${crypto.randomUUID()}.${ext}`
+      const { error } = await supabase.storage.from('site-assets').upload(path, file, {
+        cacheControl: '3600',
+        upsert: false,
+      })
+      if (error) continue
+      const { data } = supabase.storage.from('site-assets').getPublicUrl(path)
+      if (data.publicUrl) uploadedUrls.push(data.publicUrl)
+    }
+
+    if (uploadedUrls.length) {
+      const current = values.about_images
+        .split('\n')
+        .map((item) => item.trim())
+        .filter(Boolean)
+      updateValue('about_images', [...current, ...uploadedUrls].join('\n'))
+    }
+
+    setUploading(false)
+  }
+
+  function removeImage(url: string) {
+    const next = values.about_images
+      .split('\n')
+      .map((item) => item.trim())
+      .filter((item) => item && item !== url)
+      .join('\n')
+    updateValue('about_images', next)
+  }
+
+  const aboutImages = values.about_images
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean)
+
   return (
-    <div style={{ padding: '40px 5%', maxWidth: '800px', margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Link href="/admin" style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '36px',
-            height: '36px',
-            borderRadius: '8px',
-            background: 'var(--bg3)',
-            color: 'var(--muted)',
-            textDecoration: 'none'
-          }}>
-            <ArrowLeft style={{ width: '18px', height: '18px' }} />
-          </Link>
-          <div>
-            <h1 style={{
-              fontFamily: "'Unbounded', sans-serif",
-              fontSize: '1.5rem',
-              fontWeight: 700,
-              color: 'var(--text)'
-            }}>
-              Configuración
-            </h1>
-            <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-              Ajustes generales del sitio
-            </p>
-          </div>
+    <div className="admin-settings-page">
+      <header className="admin-settings-header">
+        <Link href="/admin" className="admin-settings-back" aria-label="Volver al panel">
+          <ArrowLeft aria-hidden="true" />
+        </Link>
+        <div>
+          <h1>Configuracion</h1>
+          <p>Ajustes generales, redes y contenido institucional del sitio.</p>
         </div>
+      </header>
+
+      <div className="admin-settings-grid">
+        <section className="admin-settings-card">
+          <h2><Settings aria-hidden="true" /> Configuracion general</h2>
+          <Field icon={MessageCircle} label="Numero de WhatsApp">
+            <input
+              className="input-dark"
+              value={values.whatsapp_number}
+              onChange={(event) => updateValue('whatsapp_number', event.target.value)}
+              placeholder="51900000000"
+            />
+          </Field>
+          <Field icon={Building} label="Nombre del negocio">
+            <input
+              className="input-dark"
+              value={values.business_name}
+              onChange={(event) => updateValue('business_name', event.target.value)}
+              placeholder="MUNDOSUBS"
+            />
+          </Field>
+          <Field icon={Mail} label="Email de contacto">
+            <input
+              className="input-dark"
+              type="email"
+              value={values.contact_email}
+              onChange={(event) => updateValue('contact_email', event.target.value)}
+              placeholder="soporte@mundosubs.net.pe"
+            />
+          </Field>
+        </section>
+
+        <section className="admin-settings-card">
+          <h2><Facebook aria-hidden="true" /> Redes y footer</h2>
+          <Field icon={Facebook} label="Facebook">
+            <input
+              className="input-dark"
+              value={values.facebook_url}
+              onChange={(event) => updateValue('facebook_url', event.target.value)}
+              placeholder="https://facebook.com/..."
+            />
+          </Field>
+          <Field icon={Music2} label="TikTok">
+            <input
+              className="input-dark"
+              value={values.tiktok_url}
+              onChange={(event) => updateValue('tiktok_url', event.target.value)}
+              placeholder="https://tiktok.com/@..."
+            />
+          </Field>
+          <Field icon={Mail} label="Texto corto del footer">
+            <textarea
+              className="input-dark"
+              rows={3}
+              value={values.footer_tagline}
+              onChange={(event) => updateValue('footer_tagline', event.target.value)}
+              placeholder="Texto breve para presentar la web."
+            />
+          </Field>
+        </section>
+
+        <section className="admin-settings-card admin-settings-wide">
+          <h2><Image aria-hidden="true" /> Quienes somos e historia</h2>
+          <div className="admin-settings-two">
+            <Field icon={Building} label="Titulo de la seccion">
+              <input
+                className="input-dark"
+                value={values.about_title}
+                onChange={(event) => updateValue('about_title', event.target.value)}
+                placeholder="Quienes somos"
+              />
+            </Field>
+            <Field icon={Mail} label="Resumen corto">
+              <textarea
+                className="input-dark"
+                rows={4}
+                value={values.about_summary}
+                onChange={(event) => updateValue('about_summary', event.target.value)}
+                placeholder="Cuenta en pocas lineas que hace MUNDOSUBS."
+              />
+            </Field>
+          </div>
+          <Field icon={Settings} label="Historia">
+            <textarea
+              className="input-dark"
+              rows={5}
+              value={values.about_history}
+              onChange={(event) => updateValue('about_history', event.target.value)}
+              placeholder="Ej: Nacimos para facilitar el acceso a servicios digitales en Peru..."
+            />
+          </Field>
+          <div className="admin-settings-field">
+            <span>
+              <Image aria-hidden="true" />
+              Imagenes del carrusel
+            </span>
+            <label className="admin-upload-box">
+              <Upload aria-hidden="true" />
+              <strong>{uploading ? 'Subiendo imagenes...' : 'Subir imagenes desde tu equipo'}</strong>
+              <small>JPG, PNG o WebP. Puedes seleccionar varias.</small>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                multiple
+                disabled={uploading}
+                onChange={(event) => handleImageUpload(event.target.files)}
+              />
+            </label>
+
+            {aboutImages.length > 0 && (
+              <div className="admin-image-list">
+                {aboutImages.map((url) => (
+                  <div key={url} className="admin-image-item">
+                    <img src={url} alt="" />
+                    <span>{url}</span>
+                    <button type="button" onClick={() => removeImage(url)} aria-label="Quitar imagen">
+                      <Trash2 aria-hidden="true" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <textarea
+              className="input-dark admin-image-url-editor"
+              rows={3}
+              value={values.about_images}
+              onChange={(event) => updateValue('about_images', event.target.value)}
+              placeholder="URLs guardadas automaticamente. Tambien puedes pegar una URL por linea."
+            />
+            <span className="admin-settings-help">Las imagenes se guardan en Supabase Storage y se muestran publicamente en /nosotros.</span>
+          </div>
+        </section>
       </div>
 
-      {/* Settings Form */}
-      <div style={{
-        background: 'var(--card)',
-        border: '1px solid var(--border2)',
-        borderRadius: '12px',
-        padding: '24px'
-      }}>
-        <h3 style={{
-          fontFamily: "'Space Grotesk', sans-serif",
-          fontSize: '1rem',
-          fontWeight: 600,
-          color: 'var(--text)',
-          marginBottom: '24px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <Settings style={{ width: '18px', height: '18px' }} /> Configuración general
-        </h3>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {SETTINGS_KEYS.map((key) => {
-            const Icon = ICONS[key]
-            return (
-              <div key={key}>
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: '0.85rem',
-                  fontWeight: 500,
-                  marginBottom: '8px',
-                  color: 'var(--text)'
-                }}>
-                  <Icon style={{ width: '16px', height: '16px', color: 'var(--muted)' }} />
-                  {LABELS[key]}
-                </label>
-                <input
-                  type={key === 'contact_email' ? 'email' : 'text'}
-                  value={values[key]}
-                  onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))}
-                  className="input-dark"
-                  style={{ width: '100%', maxWidth: '400px' }}
-                  placeholder={key === 'whatsapp_number' ? '51900000000' : ''}
-                />
-              </div>
-            )
-          })}
-        </div>
-
-        <button
-          onClick={handleSave}
-          disabled={loading}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginTop: '24px',
-            padding: '12px 24px',
-            borderRadius: '8px',
-            background: saved ? 'var(--green)' : 'linear-gradient(135deg, var(--accent), var(--accent2))',
-            color: 'white',
-            border: 'none',
-            fontWeight: 600,
-            cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.7 : 1
-          }}
-        >
-          {loading ? <Loader2 className="animate-spin" /> : saved ? '✓ Guardado' : <><Save style={{ width: '16px', height: '16px' }} /> Guardar cambios</>}
+      <div className="admin-settings-actions">
+        <button onClick={handleSave} disabled={loading}>
+          {loading ? <Loader2 className="animate-spin" /> : <Save aria-hidden="true" />}
+          {saved ? 'Guardado' : 'Guardar cambios'}
         </button>
       </div>
 
-      {/* Help Text */}
-      <div style={{
-        marginTop: '24px',
-        padding: '16px',
-        background: 'rgba(124,58,237,0.1)',
-        border: '1px solid rgba(124,58,237,0.2)',
-        borderRadius: '8px'
-      }}>
-        <p style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-          💡 <strong>Nota:</strong> El número de WhatsApp se usa para el botón de soporte. Asegúrate de incluir el código de país (ej: 51 para Perú).
-        </p>
+      <div className="admin-settings-note">
+        El WhatsApp debe incluir codigo de pais sin simbolos ni espacios. Ejemplo Peru: 51987654321.
       </div>
     </div>
+  )
+}
+
+function Field({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: typeof Settings
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <label className="admin-settings-field">
+      <span>
+        <Icon aria-hidden="true" />
+        {label}
+      </span>
+      {children}
+    </label>
   )
 }

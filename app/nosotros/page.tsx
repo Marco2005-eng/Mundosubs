@@ -1,9 +1,25 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { ArrowLeft, HeartHandshake, ShieldCheck, WalletCards } from 'lucide-react'
 import { AboutCarousel } from '@/components/AboutCarousel'
 import { createClient } from '@/lib/supabase/server'
 
 export const revalidate = 60
+
+export const metadata: Metadata = {
+  title: 'Nosotros',
+  description:
+    'Conoce la historia de MUNDOSUBS, una tienda peruana de suscripciones digitales en soles con pagos locales y soporte por WhatsApp.',
+  alternates: {
+    canonical: '/nosotros',
+  },
+  openGraph: {
+    title: 'Nosotros | MUNDOSUBS',
+    description:
+      'Conoce la historia de MUNDOSUBS y como ayudamos a comprar suscripciones digitales en soles peruanos.',
+    url: '/nosotros',
+  },
+}
 
 export default async function AboutPage() {
   const supabase = createClient()

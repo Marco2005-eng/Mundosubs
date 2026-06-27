@@ -57,14 +57,14 @@ export default function ForgotPasswordPage() {
         boxShadow: '0 22px 48px rgba(15, 23, 42, 0.12)',
       }}>
         <Link href="/auth/login" style={{ color: '#52627a', textDecoration: 'none', fontSize: '0.9rem' }}>
-          Volver a iniciar sesion
+          Volver a iniciar sesión
         </Link>
 
         <h1 style={{ color: '#0f172a', fontSize: '1.45rem', fontWeight: 800, margin: '24px 0 8px' }}>
-          Recuperar contrasena
+          Recuperar contraseña
         </h1>
         <p style={{ color: '#52627a', fontSize: '0.92rem', lineHeight: 1.5, marginBottom: 22 }}>
-          Escribe tu correo y te enviaremos un enlace para crear una nueva contrasena.
+          Escribe tu correo y te enviaremos un enlace para crear una nueva contraseña.
         </p>
 
         {sent ? (
@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
             <MailCheck style={{ width: 42, height: 42, color: 'var(--green)', margin: '0 auto' }} />
             <strong style={{ color: '#0f172a' }}>Revisa tu correo</strong>
             <p style={{ color: '#52627a', fontSize: '0.88rem', lineHeight: 1.5 }}>
-              Si el correo esta registrado, recibiras un enlace para restablecer tu contrasena.
+              Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.
             </p>
           </div>
         ) : (

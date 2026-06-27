@@ -375,7 +375,7 @@ export default async function DashboardPage() {
                   <span style={{ color: 'var(--muted)', fontSize: '0.74rem' }}>
                     {isExpired
                       ? 'Puedes reactivarla creando un nuevo pago.'
-                      : 'Si renuevas antes de vencer, conservas los dias restantes.'}
+                      : 'Si renuevas antes de vencer, conservas los días restantes.'}
                   </span>
                 </div>
 

@@ -49,7 +49,7 @@ export function CartDrawerWrapper() {
           </span>
         )}
       </button>
-      <CartDrawer open={open} onClose={() => setOpen(false)} />
+      {open && <CartDrawer open={open} onClose={() => setOpen(false)} />}
     </>
   )
 }

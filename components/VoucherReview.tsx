@@ -112,7 +112,7 @@ export function VoucherReview({ orderId }: VoucherReviewProps) {
             />
           </div>
           <div className="space-y-1">
-            <Label>Cod. inicio de sesion</Label>
+            <Label>Cód. inicio de sesión</Label>
             <input
               className="input-dark w-full"
               placeholder="Codigo unico por dispositivo"
@@ -125,7 +125,7 @@ export function VoucherReview({ orderId }: VoucherReviewProps) {
         <div className="mt-3 space-y-1">
           <Label>Indicaciones</Label>
           <Textarea
-            placeholder="Ej: No cambies la contrasena. Usa solo el perfil asignado."
+            placeholder="Ej: No cambies la contraseña. Usa solo el perfil asignado."
             value={access.notes}
             onChange={(e) => setAccess({ ...access, notes: e.target.value })}
           />

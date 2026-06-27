@@ -33,7 +33,7 @@ export async function PUT(req: Request) {
     return NextResponse.json({ ok: true })
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || 'No se pudo crear la contrasena' },
+      { error: error.message || 'No se pudo crear la contraseña' },
       { status: 400 }
     )
   }

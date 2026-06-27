@@ -24,12 +24,12 @@ export default function SetPasswordPage() {
     setError('')
 
     if (password.length < 6) {
-      setError('La contrasena debe tener al menos 6 caracteres')
+      setError('La contraseña debe tener al menos 6 caracteres')
       return
     }
 
     if (password !== confirmPassword) {
-      setError('Las contrasenas no coinciden')
+      setError('Las contraseñas no coinciden')
       return
     }
 
@@ -43,7 +43,7 @@ export default function SetPasswordPage() {
     setLoading(false)
 
     if (!res.ok) {
-      setError(result.error || 'No se pudo crear la contrasena')
+      setError(result.error || 'No se pudo crear la contraseña')
       return
     }
 
@@ -76,22 +76,22 @@ export default function SetPasswordPage() {
         </div>
 
         <h1 style={{ color: '#0f172a', fontSize: '1.45rem', fontWeight: 850, margin: '0 0 8px' }}>
-          Crea tu contrasena MUNDOSUBS
+          Crea tu contraseña MUNDOSUBS
         </h1>
         <p style={{ color: '#52627a', fontSize: '0.92rem', lineHeight: 1.55, marginBottom: 22 }}>
-          Entraste con Google. Crea una contrasena para que tambien puedas iniciar sesion con tu correo en otro dispositivo.
+          Entraste con Google. Crea una contraseña para que también puedas iniciar sesión con tu correo en otro dispositivo.
         </p>
 
         <form onSubmit={submit} style={{ display: 'grid', gap: 14 }}>
           <PasswordField
-            label="Nueva contrasena"
+            label="Nueva contraseña"
             value={password}
             visible={showPassword}
             onToggle={() => setShowPassword((value) => !value)}
             onChange={setPassword}
           />
           <PasswordField
-            label="Confirmar contrasena"
+            label="Confirmar contraseña"
             value={confirmPassword}
             visible={showConfirmPassword}
             onToggle={() => setShowConfirmPassword((value) => !value)}
@@ -161,7 +161,7 @@ function PasswordField({
         <button
           type="button"
           onClick={onToggle}
-          aria-label={visible ? 'Ocultar contrasena' : 'Mostrar contrasena'}
+          aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           style={{
             position: 'absolute',
             right: 8,

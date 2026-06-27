@@ -280,7 +280,7 @@ export default async function AdminSubscriptionsPage({
                     <CalendarClock style={{ width: 16, height: 16, flexShrink: 0 }} />
                     <span>
                       Vence {new Date(sub.expires_at).toLocaleDateString('es-PE')}
-                      {days >= 0 ? ` - quedan ${days} dias` : ` - hace ${Math.abs(days)} dias`}
+                      {days >= 0 ? ` - quedan ${days} días` : ` - hace ${Math.abs(days)} días`}
                     </span>
                   </div>
                 </div>
@@ -316,7 +316,7 @@ export default async function AdminSubscriptionsPage({
                       fontWeight: 700,
                       textAlign: 'center'
                     }}>
-                      Sin telefono
+                      Sin teléfono
                     </span>
                   )}
                   <Link href={`/admin/users/${sub.user_id}`} style={{

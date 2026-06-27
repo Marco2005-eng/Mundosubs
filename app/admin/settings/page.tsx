@@ -37,7 +37,7 @@ const DEFAULT_VALUES: Record<SettingKey, string> = {
   facebook_url: '',
   tiktok_url: '',
   footer_tagline: 'Suscripciones digitales en soles, sin tarjeta internacional.',
-  about_title: 'Quienes somos',
+  about_title: 'Quiénes somos',
   about_summary: 'Somos una tienda peruana de suscripciones digitales pensada para comprar en soles y recibir soporte directo.',
   about_history: '',
   about_images: '',
@@ -133,15 +133,15 @@ export default function AdminSettingsPage() {
           <ArrowLeft aria-hidden="true" />
         </Link>
         <div>
-          <h1>Configuracion</h1>
+          <h1>Configuración</h1>
           <p>Ajustes generales, redes y contenido institucional del sitio.</p>
         </div>
       </header>
 
       <div className="admin-settings-grid">
         <section className="admin-settings-card">
-          <h2><Settings aria-hidden="true" /> Configuracion general</h2>
-          <Field icon={MessageCircle} label="Numero de WhatsApp">
+          <h2><Settings aria-hidden="true" /> Configuración general</h2>
+          <Field icon={MessageCircle} label="Número de WhatsApp">
             <input
               className="input-dark"
               value={values.whatsapp_number}
@@ -198,14 +198,14 @@ export default function AdminSettingsPage() {
         </section>
 
         <section className="admin-settings-card admin-settings-wide">
-          <h2><Image aria-hidden="true" /> Quienes somos e historia</h2>
+          <h2><Image aria-hidden="true" /> Quiénes somos e historia</h2>
           <div className="admin-settings-two">
-            <Field icon={Building} label="Titulo de la seccion">
+            <Field icon={Building} label="Título de la sección">
               <input
                 className="input-dark"
                 value={values.about_title}
                 onChange={(event) => updateValue('about_title', event.target.value)}
-                placeholder="Quienes somos"
+                placeholder="Quiénes somos"
               />
             </Field>
             <Field icon={Mail} label="Resumen corto">
@@ -214,7 +214,7 @@ export default function AdminSettingsPage() {
                 rows={4}
                 value={values.about_summary}
                 onChange={(event) => updateValue('about_summary', event.target.value)}
-                placeholder="Cuenta en pocas lineas que hace MUNDOSUBS."
+                placeholder="Cuenta en pocas líneas qué hace MUNDOSUBS."
               />
             </Field>
           </div>
@@ -224,17 +224,17 @@ export default function AdminSettingsPage() {
               rows={5}
               value={values.about_history}
               onChange={(event) => updateValue('about_history', event.target.value)}
-              placeholder="Ej: Nacimos para facilitar el acceso a servicios digitales en Peru..."
+              placeholder="Ej: Nacimos para facilitar el acceso a servicios digitales en Perú..."
             />
           </Field>
           <div className="admin-settings-field">
             <span>
               <Image aria-hidden="true" />
-              Imagenes del carrusel
+              Imágenes del carrusel
             </span>
             <label className="admin-upload-box">
               <Upload aria-hidden="true" />
-              <strong>{uploading ? 'Subiendo imagenes...' : 'Subir imagenes desde tu equipo'}</strong>
+              <strong>{uploading ? 'Subiendo imágenes...' : 'Subir imágenes desde tu equipo'}</strong>
               <small>JPG, PNG o WebP. Puedes seleccionar varias.</small>
               <input
                 type="file"
@@ -264,9 +264,9 @@ export default function AdminSettingsPage() {
               rows={3}
               value={values.about_images}
               onChange={(event) => updateValue('about_images', event.target.value)}
-              placeholder="URLs guardadas automaticamente. Tambien puedes pegar una URL por linea."
+              placeholder="URLs guardadas automáticamente. También puedes pegar una URL por línea."
             />
-            <span className="admin-settings-help">Las imagenes se guardan en Supabase Storage y se muestran publicamente en /nosotros.</span>
+            <span className="admin-settings-help">Las imágenes se guardan en Supabase Storage y se muestran públicamente en /nosotros.</span>
           </div>
         </section>
       </div>
@@ -279,7 +279,7 @@ export default function AdminSettingsPage() {
       </div>
 
       <div className="admin-settings-note">
-        El WhatsApp debe incluir codigo de pais sin simbolos ni espacios. Ejemplo Peru: 51987654321.
+        El WhatsApp debe incluir código de país sin símbolos ni espacios. Ejemplo Perú: 51987654321.
       </div>
     </div>
   )

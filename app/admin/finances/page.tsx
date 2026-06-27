@@ -354,9 +354,9 @@ export default async function AdminFinancesPage({ searchParams }: { searchParams
       </section>
 
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '16px', marginBottom: '16px' }}>
-        <Ranking title="Servicios mas vendidos" items={topBy(Array.from(productMap.values()))} />
-        <Ranking title="Clientes con mas compras" items={topBy(Array.from(userMap.values()))} />
-        <Ranking title="Egresos por categoria" items={topBy(Array.from(expenseMap.values()))} negative />
+        <Ranking title="Servicios más vendidos" items={topBy(Array.from(productMap.values()))} />
+        <Ranking title="Clientes con más compras" items={topBy(Array.from(userMap.values()))} />
+        <Ranking title="Egresos por categoría" items={topBy(Array.from(expenseMap.values()))} negative />
       </section>
 
       {!setupMissing && <AdminFinanceExpenseForm expenses={expenses as any[]} />}

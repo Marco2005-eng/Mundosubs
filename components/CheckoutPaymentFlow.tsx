@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckCircle, CopyCheck, FileUp, Loader2, Tag, WalletCards } from 'lucide-react'
+import { CheckCircle, Loader2, Tag } from 'lucide-react'
 import { PaymentMethodsPanel } from '@/components/PaymentMethodsPanel'
 import { VoucherUpload } from '@/components/VoucherUpload'
 
@@ -26,12 +26,18 @@ export function CheckoutPaymentFlow({
   orderId,
   userId,
   initialDiscountPct,
+  existingVoucher,
 }: {
   methods: PaymentMethod[]
   totalLabel: string
   orderId: string
   userId: string
   initialDiscountPct: number
+  existingVoucher: {
+    bank: string | null
+    operationNumber: string | null
+    uploadedAt: string | null
+  } | null
 }) {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(methods[0] ?? null)
   const [currentTotalLabel, setCurrentTotalLabel] = useState(totalLabel)
@@ -42,10 +48,7 @@ export function CheckoutPaymentFlow({
 
   async function applyCoupon() {
     const code = couponCode.trim()
-    if (!code) {
-      setCouponError('Ingresa un codigo')
-      return
-    }
+    if (!code) { setCouponError('Ingresa un código'); return }
 
     setCouponLoading(true)
     setCouponError('')
@@ -58,7 +61,7 @@ export function CheckoutPaymentFlow({
         body: JSON.stringify({ code }),
       })
       const result = await res.json()
-      if (!res.ok) throw new Error(result.error || 'Cupon no valido')
+      if (!res.ok) throw new Error(result.error || 'Cupón no válido')
 
       setCurrentTotalLabel(result.order.amountLabel)
       setCouponMessage(`${result.coupon.code}: ${result.order.discountPct}% de descuento aplicado`)
@@ -70,159 +73,128 @@ export function CheckoutPaymentFlow({
   }
 
   return (
-    <div style={{ display: 'grid', gap: '18px' }}>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-        gap: '10px'
-      }}>
-        <StepBadge icon={WalletCards} label="1. Elige como pagar" active />
-        <StepBadge icon={FileUp} label="2. Sube tu comprobante" active={Boolean(selectedMethod)} />
-      </div>
+    <div style={{ display: 'grid', gap: 16 }}>
 
-      <section style={{
-        border: '1px solid var(--border2)',
-        borderRadius: '14px',
-        background: 'var(--card)',
-        padding: '16px',
-        display: 'grid',
-        gap: '12px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Tag style={{ width: 20, height: 20, color: 'var(--accent2)' }} />
-            <div>
-              <strong style={{ color: 'var(--text)' }}>Codigo de descuento</strong>
-              <p style={{ margin: '2px 0 0', color: 'var(--muted)', fontSize: '0.78rem' }}>
-                Puedes aplicarlo antes de elegir el metodo de pago.
-              </p>
-            </div>
-          </div>
-          {initialDiscountPct > 0 && !couponMessage && (
-            <span style={{ color: 'var(--green)', fontSize: '0.78rem', fontWeight: 800 }}>
-              {initialDiscountPct}% aplicado
+      {/* ── Step 1: Method ── */}
+      <section className="co-card">
+        <StepHeader n={1} title="Elige cómo pagar" />
+        <div style={{ marginTop: 16 }}>
+          <PaymentMethodsPanel
+            methods={methods}
+            totalLabel={currentTotalLabel}
+            selectedId={selectedMethod?.id ?? null}
+            onSelectedChange={setSelectedMethod}
+          />
+        </div>
+      </section>
+
+      {/* ── Coupon (always visible) ── */}
+      <section className="co-card">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <Tag style={{ width: 15, height: 15, color: 'var(--accent2)', flexShrink: 0 }} />
+          <strong style={{ fontSize: '0.9rem', color: 'var(--text)' }}>Cupón de descuento</strong>
+          {(initialDiscountPct > 0 || couponMessage) && (
+            <span style={{
+              marginLeft: 'auto', fontSize: '0.74rem', fontWeight: 700,
+              color: 'var(--green)', background: 'rgba(34,197,94,0.1)',
+              border: '1px solid rgba(34,197,94,0.2)', borderRadius: 999,
+              padding: '2px 10px',
+            }}>
+              {couponMessage ? 'Aplicado ✓' : `${initialDiscountPct}% activo`}
             </span>
           )}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px' }}>
-          <input
-            value={couponCode}
-            onChange={(event) => {
-              setCouponCode(event.target.value.toUpperCase())
-              setCouponError('')
-            }}
-            className="input-dark"
-            placeholder="Ej: MUNDOSUBS10"
-            style={{ minWidth: 0 }}
-          />
-          <button
-            type="button"
-            onClick={applyCoupon}
-            disabled={couponLoading}
-            style={{
-              minHeight: 40,
-              minWidth: 104,
-              borderRadius: '8px',
-              border: 'none',
-              background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
-              color: 'white',
-              fontWeight: 800,
-              cursor: couponLoading ? 'not-allowed' : 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px'
-            }}
-          >
-            {couponLoading ? <Loader2 className="animate-spin" style={{ width: 16, height: 16 }} /> : <Tag style={{ width: 16, height: 16 }} />}
-            Aplicar
-          </button>
-        </div>
-        {couponMessage && (
-          <p style={{ margin: 0, color: 'var(--green)', fontSize: '0.82rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <CheckCircle style={{ width: 15, height: 15 }} />
-            {couponMessage}
-          </p>
-        )}
-        {couponError && <p style={{ margin: 0, color: '#ef4444', fontSize: '0.82rem', fontWeight: 700 }}>{couponError}</p>}
-      </section>
-
-      <PaymentMethodsPanel
-        methods={methods}
-        totalLabel={currentTotalLabel}
-        selectedId={selectedMethod?.id ?? null}
-        onSelectedChange={setSelectedMethod}
-      />
-
-      <section style={{
-        border: '1px solid var(--border2)',
-        borderRadius: '14px',
-        background: 'var(--card)',
-        padding: '16px',
-        display: 'grid',
-        gap: '14px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <CopyCheck style={{ width: 20, height: 20, color: 'var(--green)' }} />
-          <div>
-            <strong style={{ color: 'var(--text)' }}>Confirma tu pago</strong>
-            <p style={{ margin: '2px 0 0', color: 'var(--muted)', fontSize: '0.78rem' }}>
-              Paga el monto exacto, guarda la captura e ingresa el numero de operacion.
+        {!couponMessage ? (
+          <div style={{ display: 'grid', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
+              <input
+                value={couponCode}
+                onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError('') }}
+                onKeyDown={(e) => e.key === 'Enter' && applyCoupon()}
+                placeholder="Ej: MUNDOSUBS10"
+                style={{
+                  height: 40, borderRadius: 8, padding: '0 12px',
+                  background: 'var(--bg2)',
+                  border: `1px solid ${couponError ? '#ef4444' : 'var(--border2)'}`,
+                  color: 'var(--text)', fontSize: '0.88rem', fontWeight: 600,
+                  letterSpacing: '0.5px',
+                }}
+              />
+              <button
+                type="button"
+                onClick={applyCoupon}
+                disabled={couponLoading}
+                style={{
+                  height: 40, padding: '0 18px', borderRadius: 8, cursor: 'pointer',
+                  background: 'var(--accent2)', border: 'none',
+                  color: '#fff', fontWeight: 700, fontSize: '0.85rem',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  opacity: couponLoading ? 0.7 : 1,
+                }}
+              >
+                {couponLoading
+                  ? <Loader2 style={{ width: 15, height: 15 }} className="animate-spin" />
+                  : 'Aplicar'}
+              </button>
+            </div>
+            {couponError && (
+              <p style={{ margin: 0, color: '#ef4444', fontSize: '0.76rem' }}>{couponError}</p>
+            )}
+            <p style={{ margin: 0, fontSize: '0.73rem', color: 'var(--muted)' }}>
+              Si tienes un código de descuento, aplícalo antes de transferir.
             </p>
           </div>
-        </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--green)', fontSize: '0.84rem', fontWeight: 700 }}>
+            <CheckCircle style={{ width: 15, height: 15, flexShrink: 0 }} />
+            {couponMessage}
+          </div>
+        )}
+      </section>
+
+      {/* ── Step 2: Upload voucher ── */}
+      <section className="co-card">
+        <StepHeader n={2} title="Sube tu comprobante de pago" />
+        <p style={{ margin: '4px 0 16px', fontSize: '0.8rem', color: 'var(--muted)' }}>
+          Realiza la transferencia por el monto exacto y adjunta la captura o constancia.
+        </p>
 
         {selectedMethod ? (
           <VoucherUpload
             orderId={orderId}
             userId={userId}
             paymentMethodLabel={selectedMethod.title}
+            existingVoucher={existingVoucher}
           />
         ) : (
           <div style={{
-            border: '1px dashed var(--border2)',
-            borderRadius: '12px',
-            padding: '14px',
-            color: 'var(--muted)',
-            textAlign: 'center',
-            fontSize: '0.85rem'
+            padding: 20, borderRadius: 10, textAlign: 'center',
+            border: '1px dashed var(--border2)', color: 'var(--muted)', fontSize: '0.85rem',
           }}>
-            Selecciona un metodo de pago para continuar.
+            Selecciona un método de pago arriba para continuar.
           </div>
         )}
       </section>
+
+
     </div>
   )
 }
 
-function StepBadge({
-  icon: Icon,
-  label,
-  active,
-}: {
-  icon: any
-  label: string
-  active: boolean
-}) {
+/* ── Step header ── */
+function StepHeader({ n, title }: { n: number; title: string }) {
   return (
-    <div style={{
-      minHeight: 48,
-      borderRadius: '12px',
-      border: `1px solid ${active ? 'rgba(124,58,237,0.35)' : 'var(--border2)'}`,
-      background: active ? 'rgba(124,58,237,0.10)' : 'var(--bg2)',
-      color: active ? 'var(--text)' : 'var(--muted)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '8px',
-      padding: '8px 10px',
-      fontSize: '0.8rem',
-      fontWeight: 800,
-      textAlign: 'center'
-    }}>
-      <Icon style={{ width: 16, height: 16, color: active ? 'var(--accent2)' : 'var(--muted)', flexShrink: 0 }} />
-      <span>{label}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{
+        width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+        background: 'var(--accent2)', color: '#fff',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: '0.78rem', fontWeight: 900,
+      }}>
+        {n}
+      </div>
+      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--text)' }}>{title}</h3>
     </div>
   )
 }

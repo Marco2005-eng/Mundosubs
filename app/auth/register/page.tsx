@@ -13,9 +13,9 @@ const schema = z.object({
   name: z.string().min(2, 'Nombre requerido'),
   email: z.string().email('Email invalido').max(255, 'Email muy largo').refine(hasAllowedEmailDomain, allowedEmailDomainMessage),
   password: z.string().min(6, 'Minimo 6 caracteres'),
-  confirmPassword: z.string().min(6, 'Confirma tu contrasena'),
+  confirmPassword: z.string().min(6, 'Confirma tu contraseña'),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: 'Las contrasenas no coinciden',
+  message: 'Las contraseñas no coinciden',
   path: ['confirmPassword'],
 })
 
@@ -76,7 +76,7 @@ export default function RegisterPage() {
       <div style={cardStyle}>
         <div className="auth-card-body" style={bodyStyle}>
           <div style={{ display: 'flex', gap: '4px', marginBottom: '32px' }}>
-            <Link href="/auth/login" style={inactiveTabStyle}>Iniciar sesion</Link>
+            <Link href="/auth/login" style={inactiveTabStyle}>Iniciar sesión</Link>
             <button type="button" style={activeTabStyle}>Crear cuenta</button>
           </div>
 
@@ -131,12 +131,12 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label style={labelStyle}>Confirmar contrasena</label>
+              <label style={labelStyle}>Confirmar contraseña</label>
               <PasswordInput
                 visible={showConfirmPassword}
                 toggle={() => setShowConfirmPassword((value) => !value)}
                 registration={register('confirmPassword')}
-                placeholder="Repite tu contrasena"
+                placeholder="Repite tu contraseña"
                 autoComplete="new-password"
               />
               {errors.confirmPassword && <FieldError>{errors.confirmPassword.message}</FieldError>}
@@ -155,7 +155,7 @@ export default function RegisterPage() {
             <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>
               Ya tienes cuenta?{' '}
               <Link href="/auth/login" style={{ color: 'var(--accent2)', textDecoration: 'none', fontWeight: 600 }}>
-                Inicia sesion
+                Inicia sesión
               </Link>
             </p>
           </form>
@@ -228,7 +228,7 @@ function PasswordInput({
       <button
         type="button"
         onClick={toggle}
-        aria-label={visible ? 'Ocultar contrasena' : 'Mostrar contrasena'}
+        aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
         style={{
           position: 'absolute',
           right: '8px',

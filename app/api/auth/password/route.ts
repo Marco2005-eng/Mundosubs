@@ -20,7 +20,7 @@ export async function PUT(req: Request) {
     })
 
     if (verifyError) {
-      return NextResponse.json({ error: 'La contrasena actual es incorrecta' }, { status: 400 })
+      return NextResponse.json({ error: 'La contraseña actual es incorrecta' }, { status: 400 })
     }
 
     const { error: updateError } = await supabase.auth.updateUser({

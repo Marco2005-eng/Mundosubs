@@ -59,11 +59,11 @@ export default function ResetPasswordPage() {
     setError('')
 
     if (password.length < 6) {
-      setError('La contrasena debe tener al menos 6 caracteres')
+      setError('La contraseña debe tener al menos 6 caracteres')
       return
     }
     if (password !== confirmPassword) {
-      setError('Las contrasenas no coinciden')
+      setError('Las contraseñas no coinciden')
       return
     }
 
@@ -80,7 +80,7 @@ export default function ResetPasswordPage() {
     setLoading(false)
 
     if (updateError) {
-      setError(updateError.message || 'No se pudo actualizar la contrasena')
+      setError(updateError.message || 'No se pudo actualizar la contraseña')
       return
     }
 
@@ -100,10 +100,10 @@ export default function ResetPasswordPage() {
         boxShadow: '0 22px 48px rgba(15, 23, 42, 0.12)',
       }}>
         <h1 style={{ color: '#0f172a', fontSize: '1.45rem', fontWeight: 800, margin: '0 0 8px' }}>
-          Nueva contrasena
+          Nueva contraseña
         </h1>
         <p style={{ color: '#52627a', fontSize: '0.92rem', lineHeight: 1.5, marginBottom: 22 }}>
-          Crea una nueva contrasena para entrar con tu correo en cualquier dispositivo.
+          Crea una nueva contraseña para entrar con tu correo en cualquier dispositivo.
         </p>
 
         {checkingSession ? (
@@ -113,7 +113,7 @@ export default function ResetPasswordPage() {
         ) : success ? (
           <div style={{ display: 'grid', gap: 14 }}>
             <p style={{ color: '#16a34a', fontWeight: 800, margin: 0 }}>
-              Tu contrasena fue actualizada.
+              Tu contraseña fue actualizada.
             </p>
             <Link href="/auth/login" style={{
               minHeight: 44,
@@ -126,13 +126,13 @@ export default function ResetPasswordPage() {
               justifyContent: 'center',
               textDecoration: 'none',
             }}>
-              Iniciar sesion
+              Iniciar sesión
             </Link>
           </div>
         ) : (
           <form onSubmit={submit} style={{ display: 'grid', gap: 14 }}>
             <PasswordField
-              label="Nueva contrasena"
+              label="Nueva contraseña"
               value={password}
               visible={showPassword}
               onToggle={() => setShowPassword((value) => !value)}
@@ -140,7 +140,7 @@ export default function ResetPasswordPage() {
               autoComplete="new-password"
             />
             <PasswordField
-              label="Confirmar contrasena"
+              label="Confirmar contraseña"
               value={confirmPassword}
               visible={showConfirmPassword}
               onToggle={() => setShowConfirmPassword((value) => !value)}
@@ -163,7 +163,7 @@ export default function ResetPasswordPage() {
               opacity: loading || error.includes('enlace expiro') ? 0.75 : 1,
             }}>
               {loading && <Loader2 className="animate-spin" style={{ width: 18, height: 18 }} />}
-              Guardar contrasena
+              Guardar contraseña
             </button>
             {error.includes('enlace expiro') && (
               <Link href="/auth/forgot-password" style={{ color: 'var(--accent)', fontSize: '0.86rem', fontWeight: 800, textAlign: 'center', textDecoration: 'none' }}>
@@ -213,7 +213,7 @@ function PasswordField({
         <button
           type="button"
           onClick={onToggle}
-          aria-label={visible ? 'Ocultar contrasena' : 'Mostrar contrasena'}
+          aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           style={{
             position: 'absolute',
             right: 8,

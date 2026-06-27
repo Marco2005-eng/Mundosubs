@@ -58,7 +58,7 @@ export default function AdminPaymentsPage() {
 
     fetch('/api/admin/payment-methods', { signal: controller.signal })
       .then(async (res) => {
-        if (!res.ok) throw new Error('No se pudieron cargar los metodos')
+        if (!res.ok) throw new Error('No se pudieron cargar los métodos')
         return res.json()
       })
       .then(({ methods }) => {
@@ -164,10 +164,10 @@ export default function AdminPaymentsPage() {
               fontWeight: 700,
               color: 'var(--text)'
             }}>
-              Metodos de pago
+              Métodos de pago
             </h1>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-              Configura cuentas, numeros y QR visibles en checkout
+              Configura cuentas, números y QR visibles en checkout
             </p>
           </div>
         </div>
@@ -237,7 +237,7 @@ export default function AdminPaymentsPage() {
       {loading ? (
         <div style={{ padding: '60px', textAlign: 'center', color: 'var(--muted)' }}>
           <Loader2 className="animate-spin" style={{ width: 32, height: 32, margin: '0 auto 12px' }} />
-          Cargando metodos...
+          Cargando métodos...
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '18px' }}>
@@ -448,7 +448,7 @@ export default function AdminPaymentsPage() {
       }}>
         <Building2 style={{ width: 18, height: 18, color: 'var(--hot)', flexShrink: 0 }} />
         <p>
-          Los metodos visibles apareceran en checkout. Los QR se guardan en Supabase Storage privado y se muestran con enlaces temporales.
+          Los métodos visibles aparecerán en checkout. Los QR se guardan en Supabase Storage privado y se muestran con enlaces temporales.
         </p>
       </div>
     </div>

@@ -78,7 +78,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const showHeader = !isAuthPage
 
   const navItems = [
-    { href: '/', label: 'Catalogo', icon: Home },
+    { href: '/', label: 'Catálogo', icon: Home },
     { href: '/nosotros', label: 'Nosotros', icon: Info },
     ...(user ? [
       { href: '/dashboard', label: 'Mi cuenta', icon: User },
@@ -90,126 +90,61 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     ] : []),
   ]
 
+  const isHomePage = pathname === '/'
+
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div className="app-shell">
       {showHeader && (
-        <header className="app-header" style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-          background: 'var(--card)',
-          borderBottom: '1px solid var(--border)',
-          padding: '12px 5%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px'
-        }}>
-          {/* Logo */}
-          <Link href="/" className="app-logo" style={{
-            fontFamily: "'Unbounded', sans-serif",
-            fontSize: '1.2rem',
-            fontWeight: 900,
-            background: 'linear-gradient(90deg, #a855f7, #f97316)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textDecoration: 'none',
-            flexShrink: 0
-          }}>
-            MUNDOSUBS
-          </Link>
+        <header className="app-header">
+          <div className="app-header-inner">
+            {/* Logo */}
+            <Link href="/" className="app-logo">
+              <img src="/mundosubs_icon.svg" alt="" aria-hidden="true" />
+              <span>MUNDOSUBS</span>
+            </Link>
 
-          {/* Desktop Nav Links */}
-          <nav className="desktop-nav" style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px'
-          }}>
-            {navItems.map((item) => (
-              <Link 
-                key={item.href} 
-                href={item.href} 
-                style={{
-                  color: pathname === item.href || pathname?.startsWith(item.href + '/') ? 'var(--text)' : 'var(--muted)',
-                  textDecoration: 'none',
-                  fontSize: '0.9rem',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+            {/* Desktop Nav Links */}
+            <nav className="desktop-nav">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={pathname === item.href || pathname?.startsWith(item.href + '/') ? 'active' : ''}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
 
-          {/* Desktop Actions */}
-          <div className="desktop-actions" style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px' 
-          }}>
-            <CartDrawerWrapper />
-            <ThemeToggle />
-            {user ? (
-              <button onClick={handleSignOut} style={{
-                background: 'var(--bg3)',
-                border: '1px solid var(--border2)',
-                color: 'var(--text)',
-                fontSize: '0.85rem',
-                padding: '8px 14px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-                <LogOut style={{ width: 14, height: 14 }} /> <span className="desktop-only">Salir</span>
-              </button>
-            ) : (
-              <Link href="/auth/login" style={{
-                background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
-                color: 'white',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                textDecoration: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-                <LogIn style={{ width: 14, height: 14 }} /> <span className="desktop-only">Ingresar</span>
-              </Link>
-            )}
+            {/* Desktop Actions */}
+            <div className="desktop-actions">
+              <CartDrawerWrapper />
+              <ThemeToggle />
+              {user ? (
+                <button onClick={handleSignOut} className="nav-action nav-action-muted">
+                  <LogOut style={{ width: 14, height: 14 }} /> <span className="desktop-only">Salir</span>
+                </button>
+              ) : (
+                <Link href="/auth/login" className="nav-action nav-action-primary">
+                  <LogIn style={{ width: 14, height: 14 }} /> <span className="desktop-only">Ingresar</span>
+                </Link>
+              )}
+            </div>
+
+            <div className="mobile-header-actions">
+              <CartDrawerWrapper />
+              <ThemeToggle />
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Abrir menú"
+            >
+              {mobileMenuOpen ? <X style={{ width: 24, height: 24 }} /> : <Menu style={{ width: 24, height: 24 }} />}
+            </button>
           </div>
-
-          <div className="mobile-header-actions" style={{
-            display: 'none',
-            alignItems: 'center',
-            gap: '6px',
-            marginLeft: 'auto'
-          }}>
-            <CartDrawerWrapper />
-            <ThemeToggle />
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button 
-            className="mobile-menu-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{
-              display: 'none',
-              background: 'var(--bg3)',
-              border: '1px solid var(--border2)',
-              borderRadius: '8px',
-              padding: '8px',
-              cursor: 'pointer',
-              color: 'var(--text)'
-            }}
-          >
-            {mobileMenuOpen ? <X style={{ width: 24, height: 24 }} /> : <Menu style={{ width: 24, height: 24 }} />}
-          </button>
         </header>
       )}
 
@@ -218,37 +153,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div 
           className="mobile-overlay"
           onClick={() => setMobileMenuOpen(false)}
-          style={{
-            position: 'fixed',
-            top: '60px',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.5)',
-            zIndex: 99,
-            display: 'none'
-          }}
         />
       )}
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="mobile-menu" style={{
-          position: 'fixed',
-          top: '60px',
-          right: 0,
-          width: '280px',
-          maxWidth: '80vw',
-          height: 'calc(100vh - 60px)',
-          background: 'var(--card)',
-          borderLeft: '1px solid var(--border2)',
-          padding: '20px',
-          zIndex: 100,
-          display: 'none',
-          flexDirection: 'column',
-          gap: '8px',
-          overflowY: 'auto'
-        }}>
+        <div className="mobile-menu">
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column', 
@@ -341,7 +251,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <main className="app-main" style={{ padding: '30px 5%', maxWidth: '1200px', margin: '0 auto' }}>
+      <main className={isHomePage ? 'app-main app-main-home' : 'app-main'}>
         {children}
       </main>
       {showHeader && !isAdminPage && <SiteFooter />}

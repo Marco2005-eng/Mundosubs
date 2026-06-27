@@ -23,7 +23,7 @@ export function RenewSubscriptionButton({ subscriptionId, label = 'Renovar' }: {
     setLoading(false)
 
     if (!res.ok || !result.orderId) {
-      setError(result.error || 'No se pudo crear la renovacion')
+      setError(result.error || 'No se pudo crear la renovación')
       return
     }
 

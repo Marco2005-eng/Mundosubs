@@ -13,7 +13,7 @@ const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mundosubs.net.pe'
 const siteName = 'MUNDOSUBS'
 const siteDescription =
-  'Compra suscripciones digitales, streaming, juegos y software en soles peruanos. Paga con metodos locales y recibe soporte por WhatsApp.'
+  'Compra suscripciones digitales, streaming, juegos y software en soles peruanos. Paga con métodos locales y recibe soporte por WhatsApp.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -24,11 +24,11 @@ export const metadata: Metadata = {
   },
   description: siteDescription,
   keywords: [
-    'suscripciones digitales Peru',
+    'suscripciones digitales Perú',
     'streaming en soles',
-    'comprar Netflix Peru',
-    'Disney Plus Peru',
-    'Spotify Premium Peru',
+    'comprar Netflix Perú',
+    'Disney Plus Perú',
+    'Spotify Premium Perú',
     'software en soles',
     'pagar con Yape',
     'suscripciones sin tarjeta internacional',

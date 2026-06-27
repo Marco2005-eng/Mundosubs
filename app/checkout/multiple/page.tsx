@@ -49,7 +49,7 @@ export default function MultiCheckoutPage() {
       if (cancelled) return
 
       if (ordersError) {
-        setError('No pudimos cargar tus pedidos. Vuelve al catalogo e intenta nuevamente.')
+        setError('No pudimos cargar tus pedidos. Vuelve al catálogo e intenta nuevamente.')
         setOrders([])
       } else {
         setOrders((data || []) as unknown as Order[])
@@ -81,7 +81,7 @@ export default function MultiCheckoutPage() {
     return (
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
         <Link href="/" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
-          Volver al catalogo
+          Volver al catálogo
         </Link>
         <div style={{ background: 'var(--card)', border: '1px solid var(--border2)', borderRadius: '16px', padding: '24px', marginTop: '24px' }}>
           <p style={{ color: 'var(--red)', margin: 0 }}>{error}</p>
@@ -178,7 +178,7 @@ export default function MultiCheckoutPage() {
         </div>
 
         <p style={{ color: 'var(--muted)', marginBottom: '20px', fontSize: '0.9rem', lineHeight: 1.5 }}>
-          Abre cada pedido para aplicar un cupon, elegir el metodo de pago y subir su comprobante.
+          Abre cada pedido para aplicar un cupón, elegir el método de pago y subir su comprobante.
         </p>
 
         <div style={{ display: 'grid', gap: '12px' }}>
@@ -210,7 +210,7 @@ export default function MultiCheckoutPage() {
       </div>
 
       <p style={{ textAlign: 'center', marginTop: '16px', color: 'var(--muted)', fontSize: '0.85rem' }}>
-        Dudas? Escribenos por WhatsApp
+        ¿Dudas? Escríbenos por WhatsApp
       </p>
     </div>
   )

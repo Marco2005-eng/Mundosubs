@@ -1,5 +1,5 @@
 import { syncPublicUserProfile } from '@/lib/auth'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { allowedEmailDomainMessage, hasAllowedEmailDomain } from '@/lib/email-validation'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -14,17 +14,16 @@ export async function POST(req: Request) {
   try {
     const { email, password, fullName } = schema.parse(await req.json())
     const normalizedEmail = email.toLowerCase()
-    const supabase = createClient()
+    const supabase = createAdminClient()
 
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.admin.createUser({
       email: normalizedEmail,
       password,
-      options: {
-        data: {
-          full_name: fullName,
-          role: 'cliente',
-          password_set: true,
-        },
+      email_confirm: true,
+      user_metadata: {
+        full_name: fullName,
+        role: 'cliente',
+        password_set: true,
       },
     })
 

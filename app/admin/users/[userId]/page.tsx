@@ -96,7 +96,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ use
           </a>
         ) : (
           <span style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '8px', background: 'var(--bg3)', color: 'var(--muted)', fontSize: '0.85rem', fontWeight: 600 }}>
-            <MessageCircle style={{ width: '18px', height: '18px' }} /> Sin telefono
+            <MessageCircle style={{ width: '18px', height: '18px' }} /> Sin teléfono
           </span>
         )}
       </div>
@@ -149,7 +149,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ use
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <MessageCircle style={{ width: '16px', height: '16px', color: 'var(--muted)' }} />
-              <span style={{ fontSize: '0.9rem', color: 'var(--text)' }}>{user.phone || 'Sin telefono registrado'}</span>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text)' }}>{user.phone || 'Sin teléfono registrado'}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Calendar style={{ width: '16px', height: '16px', color: 'var(--muted)' }} />

@@ -36,7 +36,7 @@ export function AboutCarousel({ title, summary, history, images }: AboutCarousel
     <section id="nosotros" className="about-section">
       <div className="about-copy">
         <span className="about-eyebrow">Nosotros</span>
-        <h2>{title || 'Quienes somos'}</h2>
+        <h2>{title || 'Quiénes somos'}</h2>
         <p>{summary || 'Somos una tienda peruana de suscripciones digitales pensada para comprar en soles y recibir soporte directo.'}</p>
         {history && <div className="about-history">{history}</div>}
       </div>
@@ -47,7 +47,7 @@ export function AboutCarousel({ title, summary, history, images }: AboutCarousel
         ) : (
           <div className="about-placeholder">
             <Images aria-hidden="true" />
-            <span>Agrega imagenes desde Configuracion</span>
+            <span>Agrega imágenes desde Configuración</span>
           </div>
         )}
 

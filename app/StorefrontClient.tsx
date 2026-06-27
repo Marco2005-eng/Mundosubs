@@ -12,7 +12,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   game: 'Juegos',
   license: 'Licencias',
   software: 'Software',
-  music: 'Musica',
+  music: 'Música',
+}
+
+const CATEGORY_BADGES: Record<string, string> = {
+  streaming: 'TV',
+  game: 'GP',
+  license: 'KEY',
+  software: 'SW',
+  music: 'FM',
 }
 
 interface ResolvedProduct {
@@ -88,7 +96,7 @@ export function StorefrontClient({
     addItem(product, discountPct)
     toast({
       title: 'Agregado al carrito',
-      description: `${product.name} ya esta listo para pagar.`,
+      description: `${product.name} ya está listo para pagar.`,
       duration: 1800,
     })
   }
@@ -119,7 +127,7 @@ export function StorefrontClient({
             <h3>{product.name}</h3>
             <p>{product.features?.slice(0, 2).join(', ') || 'Acceso digital con entrega revisada.'}</p>
             <div className="catalog-card-badges">
-              <span>{product.duration_days} dias</span>
+              <span>{product.duration_days} días</span>
               {discountPct > 0 && <span className="catalog-discount">-{discountPct}%</span>}
             </div>
           </div>
@@ -163,6 +171,7 @@ export function StorefrontClient({
               className={category === cat ? 'active' : ''}
               onClick={() => handleCategory(cat)}
             >
+              <span>{CATEGORY_BADGES[cat] ?? 'MS'}</span>
               {CATEGORY_LABELS[cat] ?? cat}
             </button>
           ))}
@@ -174,7 +183,7 @@ export function StorefrontClient({
           <div className="catalog-section-header">
             <div>
               <span>{filtered.length} resultados</span>
-              <h2>{category ? CATEGORY_LABELS[category] ?? category : 'Busqueda'}</h2>
+              <h2>{category ? CATEGORY_LABELS[category] ?? category : 'Búsqueda'}</h2>
             </div>
           </div>
           <div className="catalog-grid">
@@ -205,7 +214,7 @@ export function StorefrontClient({
                   <h2>{group.label}</h2>
                 </div>
                 <button type="button" onClick={() => handleCategory(group.category)}>
-                  Ver categoria
+                  Ver categoría
                 </button>
               </div>
               <div className="catalog-grid">
@@ -234,7 +243,7 @@ function EmptyCatalog() {
   return (
     <div className="catalog-empty">
       <h3>No encontramos servicios con ese filtro</h3>
-      <p>Prueba buscando por nombre o cambia la categoria.</p>
+      <p>Prueba buscando por nombre o cambia la categoría.</p>
     </div>
   )
 }

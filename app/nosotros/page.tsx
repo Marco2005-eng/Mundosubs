@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Nosotros | MUNDOSUBS',
     description:
-      'Conoce la historia de MUNDOSUBS y como ayudamos a comprar suscripciones digitales en soles peruanos.',
+      'Conoce la historia de MUNDOSUBS y cómo ayudamos a comprar suscripciones digitales en soles peruanos.',
     url: '/nosotros',
   },
 }
@@ -39,19 +39,19 @@ export default async function AboutPage() {
     <div className="about-page">
       <Link href="/" className="about-page-back">
         <ArrowLeft aria-hidden="true" />
-        Volver al catalogo
+        Volver al catálogo
       </Link>
 
       <section className="about-page-hero">
         <span>Sobre {settings.business_name || 'MUNDOSUBS'}</span>
-        <h1>{settings.about_title || 'Quienes somos'}</h1>
+        <h1>{settings.about_title || 'Quiénes somos'}</h1>
         <p>
           {settings.about_summary || 'Somos una tienda peruana de suscripciones digitales pensada para comprar en soles y recibir soporte directo.'}
         </p>
       </section>
 
       <AboutCarousel
-        title={settings.about_title || 'Quienes somos'}
+        title={settings.about_title || 'Quiénes somos'}
         summary={settings.about_summary || ''}
         history={settings.about_history || ''}
         images={images}
@@ -61,17 +61,17 @@ export default async function AboutPage() {
         <article>
           <WalletCards aria-hidden="true" />
           <h2>Pagos simples</h2>
-          <p>Compras en soles mediante metodos locales, sin depender de una tarjeta internacional.</p>
+          <p>Compras en soles mediante métodos locales, sin depender de una tarjeta internacional.</p>
         </article>
         <article>
           <ShieldCheck aria-hidden="true" />
-          <h2>Revision manual</h2>
+          <h2>Revisión manual</h2>
           <p>Cada comprobante es revisado antes de activar o renovar un servicio.</p>
         </article>
         <article>
           <HeartHandshake aria-hidden="true" />
           <h2>Soporte cercano</h2>
-          <p>Atencion directa por WhatsApp para resolver dudas antes y despues de la compra.</p>
+          <p>Atención directa por WhatsApp para resolver dudas antes y después de la compra.</p>
         </article>
       </section>
     </div>

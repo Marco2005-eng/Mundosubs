@@ -16,13 +16,14 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const { items, removeItem, clearCart } = useCartStore()
   const router = useRouter()
   const { toast } = useToast()
-  const [mounted] = useState(true)
   const [checkingOut, setCheckingOut] = useState(false)
 
   const total = items.reduce(
     (sum, item) => sum + applyDiscount(item.product.price, item.discountPct),
     0
   )
+
+  if (!open) return null
 
   async function handleCheckout(item: (typeof items)[0]) {
     const userData = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || 'null') : null
@@ -94,7 +95,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const drawerStyle: React.CSSProperties = {
     position: 'fixed',
     top: 0,
-    right: open ? 0 : '-400px',
+    right: 0,
     width: '100%',
     maxWidth: '380px',
     height: '100vh',

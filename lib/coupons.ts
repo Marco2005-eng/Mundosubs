@@ -42,7 +42,7 @@ export async function validateCouponForProduct(input: {
   if (!coupon) return { ok: false, error: 'Cupon no encontrado' }
   if (coupon.status !== 'active') return { ok: false, error: 'Cupon no activo' }
   if (coupon.user_id && coupon.user_id !== input.userId) {
-    return { ok: false, error: 'Este cupon pertenece a otro usuario' }
+    return { ok: false, error: 'Este cupón pertenece a otro usuario' }
   }
   if (coupon.starts_at && coupon.starts_at > now) return { ok: false, error: 'Cupon aun no disponible' }
   if (coupon.expires_at && coupon.expires_at <= now) return { ok: false, error: 'Cupon vencido' }
@@ -51,12 +51,12 @@ export async function validateCouponForProduct(input: {
     ? (coupon as any).discounts[0]
     : (coupon as any).discounts
 
-  if (!discount?.active) return { ok: false, error: 'Descuento del cupon inactivo' }
+  if (!discount?.active) return { ok: false, error: 'Descuento del cupón inactivo' }
   if (discount.product_id && discount.product_id !== input.productId) {
-    return { ok: false, error: 'Este cupon no aplica a este producto' }
+    return { ok: false, error: 'Este cupón no aplica a este producto' }
   }
   if (discount.category && discount.category !== input.category) {
-    return { ok: false, error: 'Este cupon no aplica a esta categoria' }
+    return { ok: false, error: 'Este cupón no aplica a esta categoría' }
   }
 
   const [{ count: pendingOrApproved }, { count: usedByUser }] = await Promise.all([
@@ -78,7 +78,7 @@ export async function validateCouponForProduct(input: {
     return { ok: false, error: 'Cupon agotado' }
   }
   if ((usedByUser ?? 0) > 0) {
-    return { ok: false, error: 'Ya usaste este cupon' }
+    return { ok: false, error: 'Ya usaste este cupón' }
   }
 
   return {

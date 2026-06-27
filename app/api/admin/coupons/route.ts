@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       .from('announcements')
       .insert({
         title: `${code}: ${data.pct}% de descuento`,
-        body: `Usa el codigo ${code} antes de pagar. Disponible hasta agotar ${data.maxRedemptions} canje${data.maxRedemptions === 1 ? '' : 's'}.`,
+        body: `Usa el código ${code} antes de pagar. Disponible hasta agotar ${data.maxRedemptions} canje${data.maxRedemptions === 1 ? '' : 's'}.`,
         type: 'promo',
         coupon_id: coupon.id,
         active: true,

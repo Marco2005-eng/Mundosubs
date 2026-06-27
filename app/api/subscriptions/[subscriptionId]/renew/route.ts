@@ -29,7 +29,7 @@ export async function POST(
     : (subscription as any).products
 
   if (!product?.active) {
-    return NextResponse.json({ error: 'Este producto ya no esta disponible' }, { status: 400 })
+    return NextResponse.json({ error: 'Este producto ya no está disponible' }, { status: 400 })
   }
 
   const { data: existingOrder } = await supabase

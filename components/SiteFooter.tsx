@@ -44,7 +44,7 @@ export function SiteFooter() {
   const whatsappUrl = useMemo(() => {
     const number = settings.whatsapp_number.replace(/\D/g, '')
     if (!number) return ''
-    return `https://wa.me/${number}?text=${encodeURIComponent('Hola, quiero informacion sobre MUNDOSUBS.')}`
+    return `https://wa.me/${number}?text=${encodeURIComponent('Hola, quiero información sobre MUNDOSUBS.')}`
   }, [settings.whatsapp_number])
 
   const links = [
@@ -79,7 +79,7 @@ export function SiteFooter() {
                 )
               })
             ) : (
-              <span className="site-footer-muted">Agrega tus canales desde Configuracion.</span>
+              <span className="site-footer-muted">Agrega tus canales desde Configuración.</span>
             )}
           </div>
         </div>
@@ -87,8 +87,8 @@ export function SiteFooter() {
         <div className="site-footer-section">
           <h2>Empresa</h2>
           <div className="site-footer-links">
-            <Link href="/nosotros">Quienes somos</Link>
-            <a href="/#catalog">Catalogo</a>
+            <Link href="/nosotros">Quiénes somos</Link>
+            <a href="/#catalog">Catálogo</a>
             <Link href="/auth/login">Mi cuenta</Link>
           </div>
         </div>

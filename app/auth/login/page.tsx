@@ -81,7 +81,7 @@ export default function LoginPage() {
       <div style={cardStyle}>
         <div className="auth-card-body" style={bodyStyle}>
           <div style={{ display: 'flex', gap: '4px', marginBottom: '32px' }}>
-            <button type="button" style={activeTabStyle}>Iniciar sesion</button>
+            <button type="button" style={activeTabStyle}>Iniciar sesión</button>
             <Link href="/auth/register" style={inactiveTabStyle}>Crear cuenta</Link>
           </div>
 
@@ -116,7 +116,7 @@ export default function LoginPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   {...register('password')}
-                  placeholder="Tu contrasena"
+                  placeholder="Tu contraseña"
                   className="input-dark"
                   style={{ width: '100%', paddingRight: '44px' }}
                   autoComplete="current-password"
@@ -126,7 +126,7 @@ export default function LoginPage() {
               {errors.password && <FieldError>{errors.password.message}</FieldError>}
               <div style={{ textAlign: 'right', marginTop: '8px' }}>
                 <Link href="/auth/forgot-password" style={{ color: 'var(--accent2)', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 700 }}>
-                  Olvide mi contrasena
+                  Olvidé mi contraseña
                 </Link>
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function LoginPage() {
             )}
 
             <button type="submit" disabled={loading} style={submitStyle(loading)}>
-              {loading ? <Loader2 className="animate-spin" /> : 'Iniciar sesion'}
+              {loading ? <Loader2 className="animate-spin" /> : 'Iniciar sesión'}
             </button>
 
             <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>
@@ -196,7 +196,7 @@ function PasswordToggle({ visible, onClick }: { visible: boolean; onClick: () =>
     <button
       type="button"
       onClick={onClick}
-      aria-label={visible ? 'Ocultar contrasena' : 'Mostrar contrasena'}
+      aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
       style={{
         position: 'absolute',
         right: '8px',

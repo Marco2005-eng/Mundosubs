@@ -13,33 +13,52 @@ export interface ResolvedDiscount {
 export async function getEligibleDiscounts(userId: string): Promise<ResolvedDiscount[]> {
   const supabase = createClient()
 
-  const [{ count: approvedCount }, { data: manualRows }, { data: loyaltyRows }] =
-    await Promise.all([
-      supabase
-        .from('orders')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('status', 'approved'),
+  const [
+    { count: approvedCount },
+    { data: manualRows },
+    { data: loyaltyRows },
+    { data: usedOrders }
+  ] = await Promise.all([
+    supabase
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 'approved'),
 
-      supabase
-        .from('user_discounts')
-        .select('id, discount_id, discounts(id, label, pct, type, product_id, category)')
-        .eq('user_id', userId)
-        .is('used_at', null)
-        .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString()),
+    supabase
+      .from('user_discounts')
+      .select('id, discount_id, discounts(id, label, pct, type, product_id, category)')
+      .eq('user_id', userId)
+      .is('used_at', null)
+      .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString()),
 
-      supabase
-        .from('discounts')
-        .select('id, label, pct, type, product_id, category, min_purchases')
-        .eq('type', 'loyalty')
-        .eq('active', true),
-    ])
+    supabase
+      .from('discounts')
+      .select('id, label, pct, type, product_id, category, min_purchases')
+      .eq('type', 'loyalty')
+      .eq('active', true),
+
+    supabase
+      .from('orders')
+      .select('discount_id')
+      .eq('user_id', userId)
+      .neq('status', 'rejected')
+      .not('discount_id', 'is', null),
+  ])
+
+  const usedDiscountIds = new Set<string>()
+  for (const o of usedOrders ?? []) {
+    if (o.discount_id) {
+      usedDiscountIds.add(o.discount_id)
+    }
+  }
 
   const results: ResolvedDiscount[] = []
 
   for (const row of manualRows ?? []) {
     const d = (row as any).discounts
     if (!d) continue
+    if (usedDiscountIds.has(d.id)) continue
     results.push({
       id: d.id,
       label: d.label,
@@ -53,6 +72,7 @@ export async function getEligibleDiscounts(userId: string): Promise<ResolvedDisc
 
   const approved = approvedCount ?? 0
   for (const d of loyaltyRows ?? []) {
+    if (usedDiscountIds.has(d.id)) continue
     if ((d.min_purchases ?? 0) <= approved) {
       results.push({
         id: d.id,

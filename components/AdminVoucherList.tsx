@@ -26,24 +26,68 @@ interface Order {
 
 export function AdminVoucherList({ orders }: { orders: Order[] }) {
   const [search, setSearch] = useState('')
+  const [sortBy, setSortBy] = useState<'asc' | 'desc'>('asc')
+  const [perPage, setPerPage] = useState<number>(10)
+  const [currentPage, setCurrentPage] = useState<number>(1)
 
-  const filtered = useMemo(() => {
+  const handleSearchChange = (val: string) => {
+    setSearch(val)
+    setCurrentPage(1)
+  }
+
+  const handleSortChange = (val: 'asc' | 'desc') => {
+    setSortBy(val)
+    setCurrentPage(1)
+  }
+
+  const handlePerPageChange = (val: number) => {
+    setPerPage(val)
+    setCurrentPage(1)
+  }
+
+  const sortedAndFiltered = useMemo(() => {
     const q = search.toLowerCase().trim()
-    if (!q) return orders
-    return orders.filter((order) => {
-      const voucher = getVoucher(order)
-      const id = order.id.slice(0, 8).toLowerCase()
-      const bank = (voucher?.bank ?? '').toLowerCase()
-      const opNum = (voucher?.operation_number ?? '').toLowerCase()
-      const productName = (order.products?.name ?? '').toLowerCase()
-      return id.includes(q) || bank.includes(q) || opNum.includes(q) || productName.includes(q)
+    let result = [...orders]
+    if (q) {
+      result = result.filter((order) => {
+        const voucher = getVoucher(order)
+        const id = order.id.slice(0, 8).toLowerCase()
+        const bank = (voucher?.bank ?? '').toLowerCase()
+        const opNum = (voucher?.operation_number ?? '').toLowerCase()
+        const productName = (order.products?.name ?? '').toLowerCase()
+        return id.includes(q) || bank.includes(q) || opNum.includes(q) || productName.includes(q)
+      })
+    }
+
+    result.sort((a, b) => {
+      const voucherA = getVoucher(a)
+      const voucherB = getVoucher(b)
+      const dateA = new Date(voucherA?.uploaded_at || a.created_at).getTime()
+      const dateB = new Date(voucherB?.uploaded_at || b.created_at).getTime()
+      return sortBy === 'asc' ? dateA - dateB : dateB - dateA
     })
-  }, [orders, search])
+
+    return result
+  }, [orders, search, sortBy])
+
+  const paginated = useMemo(() => {
+    const startIndex = (currentPage - 1) * perPage
+    return sortedAndFiltered.slice(startIndex, startIndex + perPage)
+  }, [sortedAndFiltered, currentPage, perPage])
+
+  const totalPages = Math.ceil(sortedAndFiltered.length / perPage)
 
   return (
     <>
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-        <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
+      <div style={{ 
+        display: 'flex', 
+        gap: '12px', 
+        marginBottom: '24px', 
+        flexWrap: 'wrap', 
+        alignItems: 'center', 
+        justifyContent: 'space-between' 
+      }}>
+        <div style={{ position: 'relative', flex: '1 1 300px', maxWidth: '400px' }}>
           <Search style={{
             position: 'absolute',
             left: '12px',
@@ -58,13 +102,36 @@ export function AdminVoucherList({ orders }: { orders: Order[] }) {
             placeholder="Buscar por ID, banco, operación o producto..."
             className="input-dark"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             style={{ width: '100%', paddingLeft: '40px' }}
           />
         </div>
+
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <select
+            value={sortBy}
+            onChange={(e) => handleSortChange(e.target.value as 'asc' | 'desc')}
+            className="input-dark"
+            style={{ cursor: 'pointer' }}
+          >
+            <option value="asc">Más antiguos primero</option>
+            <option value="desc">Más recientes primero</option>
+          </select>
+
+          <select
+            value={perPage}
+            onChange={(e) => handlePerPageChange(Number(e.target.value))}
+            className="input-dark"
+            style={{ cursor: 'pointer' }}
+          >
+            <option value={5}>Mostrar: 5</option>
+            <option value={10}>Mostrar: 10</option>
+            <option value={15}>Mostrar: 15</option>
+          </select>
+        </div>
       </div>
 
-      {!filtered.length ? (
+      {!sortedAndFiltered.length ? (
         <div style={{
           background: 'var(--card)',
           border: '1px solid var(--border2)',
@@ -86,7 +153,7 @@ export function AdminVoucherList({ orders }: { orders: Order[] }) {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {filtered.map((order) => {
+          {paginated.map((order) => {
             const voucher = getVoucher(order)
             return (
               <div key={order.id} style={{
@@ -185,6 +252,49 @@ export function AdminVoucherList({ orders }: { orders: Order[] }) {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: '24px',
+          padding: '12px 20px',
+          background: 'var(--card)',
+          border: '1px solid var(--border2)',
+          borderRadius: '12px',
+        }}>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="btn-secondary"
+            style={{
+              padding: '6px 14px',
+              fontSize: '0.85rem',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              opacity: currentPage === 1 ? 0.5 : 1,
+            }}
+          >
+            Anterior
+          </button>
+          <span style={{ fontSize: '0.9rem', color: 'var(--text)', fontWeight: 500 }}>
+            Página {currentPage} de {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="btn-secondary"
+            style={{
+              padding: '6px 14px',
+              fontSize: '0.85rem',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              opacity: currentPage === totalPages ? 0.5 : 1,
+            }}
+          >
+            Siguiente
+          </button>
         </div>
       )}
     </>

@@ -1,4 +1,5 @@
 import { syncPublicUserProfile } from '@/lib/auth'
+import { sendWelcomeEmail } from '@/lib/email'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { allowedEmailDomainMessage, hasAllowedEmailDomain } from '@/lib/email-validation'
 import { NextResponse } from 'next/server'
@@ -54,6 +55,11 @@ export async function POST(req: Request) {
       fullName,
       role: user.role,
     }).catch((syncError) => console.warn('Register profile sync failed:', syncError))
+
+    await sendWelcomeEmail({
+      to: user.email,
+      userName: fullName,
+    }).catch((emailError) => console.warn('Welcome email failed:', emailError))
 
     return NextResponse.json({ user })
   } catch (error: any) {

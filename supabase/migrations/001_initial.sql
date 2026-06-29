@@ -85,7 +85,7 @@ create table public.settings (
 insert into public.settings (key, value) values
   ('whatsapp_number', '51987654321'),
   ('business_name',   'MUNDOSUBS'),
-  ('contact_email',   'hola@mundosubs.pe');
+  ('contact_email',   'hola@mundosubs.net.pe');
 
 -- Indexes
 create index on public.orders(user_id);

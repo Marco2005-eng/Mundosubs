@@ -136,7 +136,10 @@ export default async function AdminProductsPage({
           gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
           gap: '16px'
         }}>
-          {products.map((p: any) => (
+          {products.map((p: any) => {
+            const productImage = Array.isArray(p.image_urls) && p.image_urls.length ? p.image_urls[0] : p.image_url
+
+            return (
             <div key={p.id} style={{
               background: 'var(--card)',
               border: '1px solid var(--border2)',
@@ -150,9 +153,9 @@ export default async function AdminProductsPage({
                 justifyContent: 'space-between',
                 marginBottom: '12px'
               }}>
-                {p.image_url ? (
+                {productImage ? (
                   <img
-                    src={p.image_url}
+                    src={productImage}
                     alt=""
                     loading="lazy"
                     referrerPolicy="no-referrer"
@@ -248,7 +251,8 @@ export default async function AdminProductsPage({
                 </Link>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       )}
 

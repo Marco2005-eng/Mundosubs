@@ -14,6 +14,7 @@ const schema = z.object({
     (value) => (typeof value === 'string' && value.trim() === '' ? null : value),
     z.string().url().nullable().optional()
   ),
+  image_urls: z.array(z.string().url()).max(4).optional().default([]),
   active: z.boolean(),
 })
 
@@ -25,9 +26,15 @@ export async function POST(req: NextRequest) {
 
   const serviceSupabase = createServiceClient()
   const { id, ...data } = body.data
+  const imageUrls = data.image_urls.slice(0, 4)
   const { data: product, error } = await serviceSupabase
     .from('products')
-    .insert({ ...data, updated_at: new Date().toISOString() })
+    .insert({
+      ...data,
+      image_urls: imageUrls,
+      image_url: data.image_url ?? imageUrls[0] ?? null,
+      updated_at: new Date().toISOString(),
+    })
     .select('id')
     .single()
 
@@ -61,9 +68,15 @@ export async function PUT(req: NextRequest) {
 
   const serviceSupabase = createServiceClient()
   const { id, ...data } = body.data
+  const imageUrls = data.image_urls.slice(0, 4)
   const { error } = await serviceSupabase
     .from('products')
-    .update({ ...data, updated_at: new Date().toISOString() })
+    .update({
+      ...data,
+      image_urls: imageUrls,
+      image_url: data.image_url ?? imageUrls[0] ?? null,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

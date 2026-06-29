@@ -115,22 +115,16 @@ export async function sendSubscriptionExpiryEmail(params: {
   userName: string
   productName: string
   expiresAt: string
-  reminderType: '7_days' | '3_days' | '1_day' | 'expires_today' | 'expired'
+  reminderType: '2_days' | 'expires_today'
 }) {
   const subjects = {
-    '7_days': `Tu suscripcion a ${params.productName} vence en 7 dias`,
-    '3_days': `Tu suscripcion a ${params.productName} vence pronto`,
-    '1_day': `Tu suscripcion a ${params.productName} vence manana`,
+    '2_days': `Tu suscripcion a ${params.productName} vence en 2 dias`,
     expires_today: `Tu suscripcion a ${params.productName} vence hoy`,
-    expired: `Tu suscripcion a ${params.productName} ya vencio`,
   }
 
   const messages = {
-    '7_days': `Tu suscripcion vence el <strong>${params.expiresAt}</strong>. Puedes renovarla con tiempo para no perder acceso.`,
-    '3_days': `Tu suscripcion vence el <strong>${params.expiresAt}</strong>. Te recomendamos renovarla pronto.`,
-    '1_day': `Tu suscripcion vence manana, <strong>${params.expiresAt}</strong>.`,
+    '2_days': `Tu suscripcion vence el <strong>${params.expiresAt}</strong>. Puedes renovarla con tiempo para no perder acceso.`,
     expires_today: `Tu suscripcion vence hoy, <strong>${params.expiresAt}</strong>.`,
-    expired: `Tu suscripcion vencio el <strong>${params.expiresAt}</strong>. Puedes renovarla desde tu panel.`,
   }
 
   await sendEmail(

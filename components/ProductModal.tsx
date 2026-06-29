@@ -1,11 +1,11 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -33,35 +33,82 @@ export function ProductModal({
   onAddToCart,
 }: ProductModalProps) {
   const finalPrice = applyDiscount(product.price, discountPct)
+  const images = (product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : []).slice(0, 4)
+  const logoImage = images[0]
+  const galleryImages = images.length > 1 ? images.slice(1) : images
+  const [selectedImage, setSelectedImage] = useState(0)
+  const activeGalleryImage = galleryImages[selectedImage] ?? galleryImages[0]
+
+  useEffect(() => {
+    setSelectedImage(0)
+  }, [product.id, open])
+
+  useEffect(() => {
+    if (!open || galleryImages.length <= 1) return
+
+    const timer = window.setInterval(() => {
+      setSelectedImage((current) => (current + 1) % galleryImages.length)
+    }, 3500)
+
+    return () => window.clearInterval(timer)
+  }, [galleryImages.length, open])
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <div className="flex items-center gap-3">
-            {product.image_url && (
+      <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1.5rem)] max-w-[640px] overflow-y-auto rounded-lg p-4 sm:max-h-[92vh] sm:p-6">
+        <DialogHeader className="pr-8">
+          <div className="flex min-w-0 items-center gap-3">
+            {logoImage && (
               <img
-                src={product.image_url}
+                src={logoImage}
                 alt=""
                 className="h-12 w-12 shrink-0 rounded-xl border object-contain p-1"
                 loading="lazy"
                 referrerPolicy="no-referrer"
               />
             )}
-            <DialogTitle>{product.name}</DialogTitle>
+            <DialogTitle className="min-w-0 leading-tight">{product.name}</DialogTitle>
           </div>
-          <DialogDescription>
+          <div>
             <Badge variant="secondary" className="mt-1">
               {product.category}
             </Badge>
-          </DialogDescription>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4">
+          {activeGalleryImage && (
+            <div className="space-y-3">
+              <div className="mx-auto flex h-[min(36dvh,280px)] w-full items-center justify-center overflow-hidden rounded-lg border bg-muted sm:h-[300px]">
+                <img
+                  src={activeGalleryImage}
+                  alt=""
+                  className="max-h-full max-w-full object-contain p-3 sm:p-4"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              {galleryImages.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {galleryImages.map((url, index) => (
+                    <button
+                      key={`${url}-${index}`}
+                      type="button"
+                      onClick={() => setSelectedImage(index)}
+                      className={`h-16 w-16 shrink-0 rounded-md border bg-muted p-1 sm:h-20 sm:w-20 ${selectedImage === index ? 'ring-2 ring-primary' : ''}`}
+                    >
+                      <img src={url} alt="" className="h-full w-full object-contain" loading="lazy" referrerPolicy="no-referrer" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {discountPct > 0 && <DiscountBadge pct={discountPct} label={discountLabel} />}
 
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-primary">{formatPEN(finalPrice)}</span>
+          <div className="flex flex-wrap items-baseline gap-2">
+            <span className="text-2xl font-bold text-primary sm:text-3xl">{formatPEN(finalPrice)}</span>
             {discountPct > 0 && (
               <span className="text-muted-foreground line-through">{formatPEN(product.price)}</span>
             )}
@@ -81,7 +128,7 @@ export function ProductModal({
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="sticky bottom-0 -mx-4 -mb-4 flex-col gap-2 border-t bg-background/95 p-4 backdrop-blur sm:static sm:m-0 sm:flex-row sm:border-0 sm:bg-transparent sm:p-0">
           <Button variant="outline" onClick={onClose}>
             Cerrar
           </Button>

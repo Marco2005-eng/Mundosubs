@@ -17,6 +17,7 @@ export interface Product {
   duration_days: number
   features: string[]
   image_url?: string | null
+  image_urls?: string[] | null
   active: boolean
 }
 
@@ -38,6 +39,8 @@ const CATEGORY_LABELS: Record<string, string> = {
 export function ProductCard({ product, discountPct = 0, discountLabel, onAddToCart }: ProductCardProps) {
   const [open, setOpen] = useState(false)
   const finalPrice = applyDiscount(product.price, discountPct)
+  const images = (product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : []).slice(0, 4)
+  const primaryImage = images[0]
 
   return (
     <>
@@ -45,9 +48,9 @@ export function ProductCard({ product, discountPct = 0, discountLabel, onAddToCa
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
-              {product.image_url && (
+              {primaryImage && (
                 <img
-                  src={product.image_url}
+                  src={primaryImage}
                   alt=""
                   className="h-10 w-10 shrink-0 rounded-lg border object-contain p-1"
                   loading="lazy"

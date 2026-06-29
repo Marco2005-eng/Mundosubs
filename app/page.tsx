@@ -136,7 +136,7 @@ export default async function StorefrontPage({
                     }}
                   >
                     {/* Left: text content */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+                    <div className="announcement-main-copy" style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
                       <span style={{
                         display: 'inline-flex', alignItems: 'center', gap: 5,
                         fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.8px',
@@ -161,13 +161,13 @@ export default async function StorefrontPage({
 
                     {/* Right: big % badge */}
                     {pct && (
-                      <div style={{
+                      <div className="announcement-percent-badge" style={{
                         flexShrink: 0, textAlign: 'center',
                         background: 'rgba(255,255,255,0.12)',
                         border: '1px solid rgba(255,255,255,0.2)',
                         borderRadius: 20, padding: '18px 24px',
                       }}>
-                        <span style={{
+                        <span className="announcement-percent-value" style={{
                           display: 'block',
                           fontFamily: "'Unbounded', sans-serif",
                           fontSize: '2.8rem', fontWeight: 900, lineHeight: 1,

@@ -546,6 +546,23 @@ textarea {
   line-height: 1.45;
 }
 
+.announcement-main-copy {
+  min-width: 0;
+}
+
+.announcement-main-copy h3,
+.announcement-main-copy p {
+  overflow-wrap: anywhere;
+}
+
+.announcement-percent-badge {
+  min-width: 118px;
+}
+
+.announcement-percent-value {
+  white-space: nowrap;
+}
+
 .announcement-empty {
   padding: 16px;
 }
@@ -779,6 +796,23 @@ textarea {
   font-size: 0.8rem;
   line-height: 1.45;
   margin: 0;
+}
+
+.catalog-card-thumbs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.catalog-card-thumbs img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  background: var(--bg2);
+  object-fit: contain;
+  padding: 5px;
 }
 
 .catalog-card-badges {
@@ -2711,6 +2745,48 @@ textarea {
 
   .promo-card {
     padding: 20px;
+  }
+
+  .announcements-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .announcements-grid .announcement-card:first-child {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    min-height: 0 !important;
+    padding: 20px !important;
+  }
+
+  .announcements-grid .announcement-card:first-child .announcement-main-copy {
+    width: 100%;
+  }
+
+  .announcements-grid .announcement-card:first-child .announcement-main-copy > span {
+    max-width: 100%;
+    width: max-content;
+  }
+
+  .announcements-grid .announcement-card:first-child .announcement-main-copy h3 {
+    font-size: 1.05rem !important;
+    line-height: 1.22 !important;
+  }
+
+  .announcements-grid .announcement-card:first-child .announcement-main-copy p {
+    font-size: 0.78rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .announcement-percent-badge {
+    align-self: flex-start;
+    min-width: 0;
+    border-radius: 14px !important;
+    padding: 10px 14px !important;
+  }
+
+  .announcement-percent-value {
+    font-size: 1.7rem !important;
   }
 
   .payment-strip {

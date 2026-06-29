@@ -104,6 +104,8 @@ export function StorefrontClient({
   function renderProductCard(item: ResolvedProduct, index = 0) {
     const { product, discountPct } = item
     const finalPrice = product.price * (1 - discountPct / 100)
+    const images = (product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : []).slice(0, 4)
+    const primaryImage = images[0]
 
     return (
       <article
@@ -114,9 +116,9 @@ export function StorefrontClient({
         <button type="button" className="catalog-card-main" onClick={() => setSelectedProduct(item)}>
           <div className="catalog-card-media">
             <span className="catalog-card-category">{CATEGORY_LABELS[product.category] ?? product.category}</span>
-            {product.image_url ? (
+            {primaryImage ? (
               <div className="catalog-card-logo">
-                <img src={product.image_url} alt={`${product.name} logo`} loading="lazy" referrerPolicy="no-referrer" />
+                <img src={primaryImage} alt={`${product.name} logo`} loading="lazy" referrerPolicy="no-referrer" />
               </div>
             ) : (
               <div className="catalog-card-fallback">{product.name.slice(0, 2).toUpperCase()}</div>

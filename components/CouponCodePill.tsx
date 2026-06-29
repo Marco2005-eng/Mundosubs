@@ -22,6 +22,7 @@ export function CouponCodePill({ code, dark = false }: { code: string; dark?: bo
         title="Clic para copiar"
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 10,
+          maxWidth: '100%',
           padding: '9px 16px', borderRadius: 12, cursor: 'pointer',
           background: copied ? 'rgba(134,239,172,0.2)' : 'rgba(255,255,255,0.15)',
           border: `1px solid ${copied ? 'rgba(134,239,172,0.4)' : 'rgba(255,255,255,0.25)'}`,
@@ -35,6 +36,9 @@ export function CouponCodePill({ code, dark = false }: { code: string; dark?: bo
           fontFamily: 'monospace, sans-serif', fontWeight: 900,
           fontSize: '0.95rem', letterSpacing: '1.5px',
           color: copied ? '#86efac' : '#fff',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
         }}>
           {code}
         </span>
@@ -57,6 +61,7 @@ export function CouponCodePill({ code, dark = false }: { code: string; dark?: bo
       title="Clic para copiar"
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 9,
+        maxWidth: '100%',
         padding: '7px 14px', borderRadius: 10, cursor: 'pointer',
         background: copied ? 'rgba(22,163,74,0.08)' : 'rgba(124,58,237,0.07)',
         border: `1px solid ${copied ? 'rgba(22,163,74,0.25)' : 'rgba(124,58,237,0.2)'}`,
@@ -70,6 +75,9 @@ export function CouponCodePill({ code, dark = false }: { code: string; dark?: bo
         fontFamily: 'monospace, sans-serif', fontWeight: 900,
         fontSize: '0.85rem', letterSpacing: '1px',
         color: copied ? 'var(--green)' : 'var(--accent2)',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
       }}>
         {code}
       </span>

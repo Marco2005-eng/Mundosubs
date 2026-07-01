@@ -38,6 +38,7 @@ export function ProductModal({
   const galleryImages = images.length > 1 ? images.slice(1) : images
   const [selectedImage, setSelectedImage] = useState(0)
   const activeGalleryImage = galleryImages[selectedImage] ?? galleryImages[0]
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
     setSelectedImage(0)
@@ -62,7 +63,7 @@ export function ProductModal({
               <img
                 src={logoImage}
                 alt=""
-                className="h-12 w-12 shrink-0 rounded-xl border object-contain p-1"
+                className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 object-contain drop-shadow-sm"
                 loading="lazy"
                 referrerPolicy="no-referrer"
               />
@@ -79,25 +80,28 @@ export function ProductModal({
         <div className="space-y-4">
           {activeGalleryImage && (
             <div className="space-y-3">
-              <div className="mx-auto flex h-[min(36dvh,280px)] w-full items-center justify-center overflow-hidden rounded-lg border bg-muted sm:h-[300px]">
-                <img
-                  src={activeGalleryImage}
-                  alt=""
-                  className="max-h-full max-w-full object-contain p-3 sm:p-4"
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
+              <button 
+                type="button"
+                className="relative block mx-auto w-full max-w-[280px] sm:max-w-[320px] aspect-square group mt-4 mb-2 cursor-zoom-in focus:outline-none"
+                onClick={() => setIsFullscreen(true)}
+              >
+                {/* Efecto de difuminado (Glow) detrás de la imagen */}
+                <img src={activeGalleryImage} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-50 scale-105 translate-y-4 rounded-3xl transition-transform duration-500 group-hover:scale-110" aria-hidden="true" />
+                {/* Imagen principal sin borde blanco */}
+                <div className="relative w-full h-full flex items-center justify-center rounded-3xl overflow-hidden shadow-[0_20px_50px_-12px_rgba(0,0,0,0.3)] border border-white/20 bg-black/5">
+                  <img src={activeGalleryImage} alt="" className="w-full h-full object-cover" loading="lazy" />
+                </div>
+              </button>
               {galleryImages.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
+                <div className="flex gap-2 overflow-x-auto pb-1 justify-center mt-4">
                   {galleryImages.map((url, index) => (
                     <button
                       key={`${url}-${index}`}
                       type="button"
                       onClick={() => setSelectedImage(index)}
-                      className={`h-16 w-16 shrink-0 rounded-md border bg-muted p-1 sm:h-20 sm:w-20 ${selectedImage === index ? 'ring-2 ring-primary' : ''}`}
+                      className={`h-16 w-16 shrink-0 rounded-xl border sm:h-20 sm:w-20 overflow-hidden transition-all ${selectedImage === index ? 'ring-2 ring-violet-500 scale-105 shadow-md' : 'opacity-60 hover:opacity-100'}`}
                     >
-                      <img src={url} alt="" className="h-full w-full object-contain" loading="lazy" referrerPolicy="no-referrer" />
+                      <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
                     </button>
                   ))}
                 </div>
@@ -133,7 +137,7 @@ export function ProductModal({
             Cerrar
           </Button>
           <Button
-            className="gap-1"
+            className="gap-1 bg-violet-600 hover:bg-violet-700 text-white shadow-sm"
             onClick={() => {
               onAddToCart?.(product, discountPct)
               onClose()
@@ -143,6 +147,24 @@ export function ProductModal({
             Agregar al carrito
           </Button>
         </DialogFooter>
+
+        {isFullscreen && (
+          <div 
+            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-md cursor-zoom-out"
+            onClick={() => setIsFullscreen(false)}
+            title="Haz click para cerrar"
+          >
+            <img 
+              src={activeGalleryImage} 
+              alt="Vista ampliada" 
+              className="w-full h-full object-contain max-w-screen-xl max-h-screen" 
+            />
+            {/* Botón flotante para cerrar (opcional visual) */}
+            <div className="absolute top-4 right-4 bg-white/10 text-white p-2 rounded-full backdrop-blur-sm pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

@@ -1,7 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { allowedEmailDomainMessage, hasAllowedEmailDomain } from '@/lib/email-validation'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { sendPasswordRecoveryEmail } from '@/lib/email'
 
 const schema = z.object({
   email: z.string().email().refine(hasAllowedEmailDomain, allowedEmailDomainMessage),
@@ -19,15 +20,27 @@ function getOrigin(req: Request) {
 export async function POST(req: Request) {
   try {
     const { email } = schema.parse(await req.json())
-    const supabase = createClient()
+    const supabaseAdmin = createAdminClient()
     const origin = getOrigin(req)
+    const targetEmail = email.trim().toLowerCase()
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: `${origin}/auth/callback?next=/auth/reset-password`,
+    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'recovery',
+      email: targetEmail,
+      options: {
+        redirectTo: `${origin}/auth/callback?next=/auth/reset-password`,
+      }
     })
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    if (data?.properties?.action_link) {
+      await sendPasswordRecoveryEmail({
+        to: targetEmail,
+        resetLink: data.properties.action_link
+      })
     }
 
     return NextResponse.json({ ok: true })

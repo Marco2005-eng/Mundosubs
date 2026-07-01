@@ -114,14 +114,34 @@ export function StorefrontClient({
         style={{ animationDelay: `${Math.min(index * 35, 180)}ms` }}
       >
         <button type="button" className="catalog-card-main" onClick={() => setSelectedProduct(item)}>
-          <div className="catalog-card-media">
-            <span className="catalog-card-category">{CATEGORY_LABELS[product.category] ?? product.category}</span>
+          <div className={`catalog-card-media relative overflow-hidden ${primaryImage ? '!bg-muted/20 !bg-none' : ''}`}>
+            {/* Difuminado de fondo usando la imagen (Glow de fondo) */}
+            {primaryImage && (
+              <div className="absolute inset-0 z-0 pointer-events-none">
+                <img 
+                  src={primaryImage} 
+                  alt="" 
+                  className="w-full h-full object-cover blur-2xl opacity-50 scale-125" 
+                  aria-hidden="true" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card/90" />
+              </div>
+            )}
+
+            <span className="catalog-card-category z-10">{CATEGORY_LABELS[product.category] ?? product.category}</span>
+            
             {primaryImage ? (
-              <div className="catalog-card-logo">
-                <img src={primaryImage} alt={`${product.name} logo`} loading="lazy" referrerPolicy="no-referrer" />
+              <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
+                <img 
+                  src={primaryImage} 
+                  alt={`${product.name} logo`} 
+                  loading="lazy" 
+                  referrerPolicy="no-referrer" 
+                  className="max-w-[130px] max-h-[60px] object-contain rounded-xl drop-shadow-xl transform transition-transform hover:scale-110" 
+                />
               </div>
             ) : (
-              <div className="catalog-card-fallback">{product.name.slice(0, 2).toUpperCase()}</div>
+              <div className="catalog-card-fallback relative z-10">{product.name.slice(0, 2).toUpperCase()}</div>
             )}
           </div>
 

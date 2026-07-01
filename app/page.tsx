@@ -221,10 +221,20 @@ export default async function StorefrontPage({
         ) : (
           <div className="promo-layout">
             <article className="promo-card promo-main">
-              <span>Descuento activo</span>
-              <h3>10% OFF en tu primera compra</h3>
-              <p>Usa los cupones disponibles al confirmar tu pedido y paga en soles con métodos locales.</p>
-              <strong>BIENVENIDO10</strong>
+              <span>Explora más</span>
+              <h3>Bienvenido a MUNDOSUBS</h3>
+              <p>Descubre el catálogo completo de suscripciones premium y empieza a disfrutar hoy mismo con total seguridad.</p>
+              <Link href="#catalog" style={{ 
+                display: 'inline-block',
+                marginTop: '12px',
+                padding: '8px 16px',
+                background: 'rgba(255,255,255,0.15)',
+                color: '#fff',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                fontWeight: 600,
+                fontSize: '0.9rem'
+              }}>Ver catálogo</Link>
             </article>
             <div className="promo-side">
               <article className="promo-card promo-small">

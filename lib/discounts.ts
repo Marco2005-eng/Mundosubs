@@ -72,7 +72,6 @@ export async function getEligibleDiscounts(userId: string): Promise<ResolvedDisc
 
   const approved = approvedCount ?? 0
   for (const d of loyaltyRows ?? []) {
-    if (usedDiscountIds.has(d.id)) continue
     if ((d.min_purchases ?? 0) <= approved) {
       results.push({
         id: d.id,

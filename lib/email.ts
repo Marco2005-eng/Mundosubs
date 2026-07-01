@@ -137,3 +137,20 @@ export async function sendSubscriptionExpiryEmail(params: {
     )
   )
 }
+
+export async function sendPasswordRecoveryEmail(params: {
+  to: string
+  resetLink: string
+}) {
+  await sendEmail(
+    params.to,
+    'Recupera tu contraseña - MUNDOSUBS',
+    layout(
+      'Hola,',
+      `<p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en MUNDOSUBS.</p>
+      <p>Haz clic en el siguiente botón para crear una nueva contraseña. Si no solicitaste este cambio, puedes ignorar este correo de forma segura.</p>
+      ${button('Restablecer contraseña', params.resetLink)}
+      <p style="font-size:13px;color:#6b7280;margin-top:24px">El enlace expirará por seguridad.</p>`
+    )
+  )
+}

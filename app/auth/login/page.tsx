@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Sparkles } from 'lucide-react'
 import { GoogleLoginButton } from '@/components/GoogleLoginButton'
 import { allowedEmailDomainMessage, hasAllowedEmailDomain } from '@/lib/email-validation'
 
@@ -72,21 +72,51 @@ export default function LoginPage() {
       <AuthBackground />
 
       <Link href="/" style={backLinkStyle}>
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="url(#back-gradient)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <defs>
+            <linearGradient id="back-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#8b5cf6" />
+              <stop offset="100%" stopColor="#f97316" />
+            </linearGradient>
+          </defs>
           <path d="m15 18-6-6 6-6" />
         </svg>
-        Volver al sitio
+        <span style={{ background: 'linear-gradient(45deg, #8b5cf6, #f97316)', WebkitBackgroundClip: 'text', color: 'transparent', fontWeight: 'bold' }}>Volver al sitio</span>
       </Link>
 
       <div style={cardStyle}>
         <div className="auth-card-body" style={bodyStyle}>
+          
+          {/* Logo Aesthetic Añadido */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+             <div style={{ 
+               background: 'linear-gradient(135deg, rgba(139,92,246,0.15), rgba(249,115,22,0.15))', 
+               padding: '16px', 
+               borderRadius: '20px',
+               border: '1px solid rgba(255,255,255,0.1)',
+               boxShadow: '0 8px 32px rgba(139,92,246,0.1)'
+             }}>
+               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <defs>
+                   <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                     <stop offset="0%" stopColor="#8b5cf6" />
+                     <stop offset="100%" stopColor="#f97316" />
+                   </linearGradient>
+                 </defs>
+                 <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="url(#logo-grad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                 <path d="M2 17L12 22L22 17" stroke="url(#logo-grad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                 <path d="M2 12L12 17L22 12" stroke="url(#logo-grad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               </svg>
+             </div>
+          </div>
+
           <div style={{ display: 'flex', gap: '4px', marginBottom: '32px' }}>
             <button type="button" style={activeTabStyle}>Iniciar sesión</button>
             <Link href="/auth/register" style={inactiveTabStyle}>Crear cuenta</Link>
           </div>
 
           <h2 style={titleStyle}>Bienvenido de vuelta</h2>
-          <p style={{ color: 'var(--muted)', marginBottom: '24px' }}>
+          <p style={{ color: 'var(--muted)', marginBottom: '24px', textAlign: 'center' }}>
             Ingresa tus credenciales para continuar.
           </p>
 
@@ -138,7 +168,7 @@ export default function LoginPage() {
             )}
 
             <button type="submit" disabled={loading} style={submitStyle(loading)}>
-              {loading ? <Loader2 className="animate-spin" /> : 'Iniciar sesión'}
+              {loading ? <Loader2 className="animate-spin" color="#fff" /> : <><Sparkles size={18} /> Iniciar sesión</>}
             </button>
 
             <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>
@@ -207,13 +237,12 @@ function PasswordToggle({ visible, onClick }: { visible: boolean; onClick: () =>
         border: 'none',
         borderRadius: '8px',
         background: 'transparent',
-        color: 'var(--muted)',
         display: 'grid',
         placeItems: 'center',
         cursor: 'pointer',
       }}
     >
-      {visible ? <EyeOff style={{ width: 18, height: 18 }} /> : <Eye style={{ width: 18, height: 18 }} />}
+      {visible ? <EyeOff style={{ width: 18, height: 18, stroke: '#f97316' }} /> : <Eye style={{ width: 18, height: 18, stroke: '#8b5cf6' }} />}
     </button>
   )
 }
@@ -284,6 +313,7 @@ const titleStyle = {
   fontWeight: 700,
   color: 'var(--text)',
   marginBottom: '8px',
+  textAlign: 'center' as const,
 }
 
 const labelStyle = {

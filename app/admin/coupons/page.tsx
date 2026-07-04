@@ -69,7 +69,11 @@ export default function AdminCouponsPage() {
 
   async function toggleStatus(coupon: Coupon) {
     const supabase = createClient()
-    const next = coupon.status === 'active' ? 'inactive' : 'active'
+    const next = coupon.status === 'active' ? 'disabled' : 'active'
+    
+    // Solo cambiar el estado visual localmente
+    setCoupons((prev) => prev.map(c => c.id === coupon.id ? { ...c, status: next } : c))
+    
     await supabase.from('coupons').update({ status: next }).eq('id', coupon.id)
     loadCoupons()
   }
@@ -104,7 +108,8 @@ export default function AdminCouponsPage() {
             display: 'inline-flex', alignItems: 'center', gap: 7,
             padding: '10px 18px', borderRadius: 9,
             background: showForm ? 'var(--bg3)' : 'linear-gradient(135deg, var(--accent), var(--accent2))',
-            color: 'white', border: showForm ? '1px solid var(--border2)' : 'none',
+            color: showForm ? 'var(--text)' : 'white',
+            border: showForm ? '1px solid var(--border2)' : 'none',
             fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
           }}
         >
@@ -122,7 +127,7 @@ export default function AdminCouponsPage() {
             Crear nuevo cupón
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24 }}>
             <Field label="Código">
               <input
                 className="input-dark"
@@ -303,21 +308,37 @@ export default function AdminCouponsPage() {
 
                 {/* Actions */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
-                  <button
-                    onClick={() => toggleStatus(coupon)}
-                    title={isActive ? 'Desactivar' : 'Activar'}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 6,
-                      padding: '6px 12px', borderRadius: 7, cursor: 'pointer',
-                      border: '1px solid var(--border2)', background: 'var(--bg2)',
-                      color: isActive ? '#ef4444' : 'var(--green)',
-                      fontSize: '0.76rem', fontWeight: 700,
-                    }}
-                  >
-                    {isActive
-                      ? <><XCircle style={{ width: 13, height: 13 }} /> Pausar</>
-                      : <><CheckCircle style={{ width: 13, height: 13 }} /> Activar</>}
-                  </button>
+                  {isExpired ? (
+                    <button
+                      disabled
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        padding: '6px 12px', borderRadius: 7, cursor: 'not-allowed',
+                        border: '1px solid var(--border2)', background: 'var(--bg2)',
+                        color: 'var(--muted)',
+                        fontSize: '0.76rem', fontWeight: 700,
+                        opacity: 0.5,
+                      }}
+                    >
+                      <XCircle style={{ width: 13, height: 13 }} /> Vencido
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => toggleStatus(coupon)}
+                      title={isActive ? 'Desactivar' : 'Activar'}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        padding: '6px 12px', borderRadius: 7, cursor: 'pointer',
+                        border: '1px solid var(--border2)', background: 'var(--bg2)',
+                        color: isActive ? '#ef4444' : 'var(--green)',
+                        fontSize: '0.76rem', fontWeight: 700,
+                      }}
+                    >
+                      {isActive
+                        ? <><XCircle style={{ width: 13, height: 13 }} /> Pausar</>
+                        : <><CheckCircle style={{ width: 13, height: 13 }} /> Activar</>}
+                    </button>
+                  )}
                 </div>
               </div>
             )

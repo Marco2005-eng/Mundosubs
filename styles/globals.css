@@ -1152,7 +1152,7 @@ textarea {
   margin: 0 auto;
   padding: 28px 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(150px, 0.7fr));
+  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(150px, 0.7fr));
   gap: 22px;
 }
 

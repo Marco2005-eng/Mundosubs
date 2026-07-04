@@ -13,24 +13,24 @@ const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://mundosubs.net.pe'
 const siteName = 'MUNDOSUBS'
 const siteDescription =
-  'Compra suscripciones digitales, streaming, juegos y software en soles peruanos. Paga con métodos locales y recibe soporte por WhatsApp.'
+  'Compra suscripciones digitales y plataformas de streaming en soles peruanos. Paga con métodos locales como Yape o Plin y recibe soporte rápido por WhatsApp.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: siteName,
   title: {
-    default: 'MUNDOSUBS | Suscripciones digitales en soles peruanos',
+    default: 'MUNDOSUBS | Streaming en soles peruanos y suscripciones digitales',
     template: `%s | ${siteName}`,
   },
   description: siteDescription,
   keywords: [
+    'streaming en soles peruanos',
     'suscripciones digitales Perú',
-    'streaming en soles',
     'comprar Netflix Perú',
+    'streaming en soles',
     'Disney Plus Perú',
     'Spotify Premium Perú',
-    'software en soles',
-    'pagar con Yape',
+    'pagar streaming con Yape',
     'suscripciones sin tarjeta internacional',
   ],
   authors: [{ name: siteName }],
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     locale: 'es_PE',
     url: '/',
     siteName,
-    title: 'MUNDOSUBS | Suscripciones digitales en soles peruanos',
+    title: 'MUNDOSUBS | Streaming en soles peruanos y suscripciones digitales',
     description: siteDescription,
     images: [
       {
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MUNDOSUBS | Suscripciones digitales en soles peruanos',
+    title: 'MUNDOSUBS | Streaming en soles peruanos y suscripciones digitales',
     description: siteDescription,
     images: ['/opengraph-image'],
   },

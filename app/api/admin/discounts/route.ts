@@ -7,8 +7,8 @@ const schema = z.object({
   id: z.string().uuid().optional(),
   label: z.string().min(1),
   type: z.enum(['loyalty', 'manual']),
-  pct: z.number().positive().max(100),
-  min_purchases: z.number().int().min(0).nullable().optional(),
+  pct: z.coerce.number().positive().max(100),
+  min_purchases: z.coerce.number().int().min(0).nullable().optional(),
   product_id: z.string().uuid().nullable().optional(),
   category: z.string().nullable().optional(),
   active: z.boolean().default(true),
@@ -42,6 +42,20 @@ export async function PUT(req: NextRequest) {
   const { id, ...data } = body.data
   const serviceSupabase = createServiceClient()
   const { error } = await serviceSupabase.from('discounts').update(data).eq('id', id)
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
+}
+
+export async function DELETE(req: NextRequest) {
+  if (!(await requireAdmin().catch(() => null))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const { searchParams } = new URL(req.url)
+  const id = searchParams.get('id')
+  if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
+
+  const serviceSupabase = createServiceClient()
+  const { error } = await serviceSupabase.from('discounts').delete().eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })

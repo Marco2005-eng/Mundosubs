@@ -47,11 +47,14 @@ export function SiteFooter() {
     return `https://wa.me/${number}?text=${encodeURIComponent('Hola, quiero información sobre MUNDOSUBS.')}`
   }, [settings.whatsapp_number])
 
-  const links = [
+  const socialLinks = [
     settings.facebook_url && { label: 'Facebook', href: settings.facebook_url, icon: Facebook },
     settings.tiktok_url && { label: 'TikTok', href: settings.tiktok_url, icon: Music2 },
-    settings.contact_email && { label: 'Gmail', href: `mailto:${settings.contact_email}`, icon: Mail },
+  ].filter(Boolean) as Array<{ label: string; href: string; icon: typeof Mail }>
+
+  const contactLinks = [
     whatsappUrl && { label: 'WhatsApp', href: whatsappUrl, icon: MessageCircle },
+    settings.contact_email && { label: settings.contact_email, href: `mailto:${settings.contact_email}`, icon: Mail },
   ].filter(Boolean) as Array<{ label: string; href: string; icon: typeof Mail }>
 
   return (
@@ -62,13 +65,16 @@ export function SiteFooter() {
             {settings.business_name || 'MUNDOSUBS'}
           </Link>
           <p>{settings.footer_tagline}</p>
+          <p className="site-footer-muted" style={{ marginTop: '12px', fontSize: '0.75rem' }}>
+            &copy; {new Date().getFullYear()} {settings.business_name || 'MUNDOSUBS'}. Todos los derechos reservados.
+          </p>
         </div>
 
         <div className="site-footer-section">
-          <h2>Contacto</h2>
+          <h2>Soporte</h2>
           <div className="site-footer-links">
-            {links.length ? (
-              links.map((item) => {
+            {contactLinks.length ? (
+              contactLinks.map((item) => {
                 const Icon = item.icon
                 return (
                   <a key={item.label} href={item.href} target={item.href.startsWith('mailto:') ? undefined : '_blank'} rel="noreferrer">
@@ -79,17 +85,39 @@ export function SiteFooter() {
                 )
               })
             ) : (
-              <span className="site-footer-muted">Agrega tus canales desde Configuración.</span>
+              <span className="site-footer-muted">Agrega tu contacto desde Configuración.</span>
             )}
           </div>
         </div>
 
         <div className="site-footer-section">
-          <h2>Empresa</h2>
+          <h2>Redes Sociales</h2>
+          <div className="site-footer-links">
+            {socialLinks.length ? (
+              socialLinks.map((item) => {
+                const Icon = item.icon
+                return (
+                  <a key={item.label} href={item.href} target="_blank" rel="noreferrer">
+                    <Icon aria-hidden="true" />
+                    <span>{item.label}</span>
+                    <ExternalLink aria-hidden="true" />
+                  </a>
+                )
+              })
+            ) : (
+              <span className="site-footer-muted">Agrega tus redes desde Configuración.</span>
+            )}
+          </div>
+        </div>
+
+        <div className="site-footer-section">
+          <h2>Empresa y Legal</h2>
           <div className="site-footer-links">
             <Link href="/nosotros">Quiénes somos</Link>
             <a href="/#catalog">Catálogo</a>
             <Link href="/auth/login">Mi cuenta</Link>
+            <Link href="/terminos">Reglas y Penalizaciones</Link>
+            <Link href="/privacidad">Políticas de Privacidad</Link>
           </div>
         </div>
       </div>

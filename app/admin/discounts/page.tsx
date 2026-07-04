@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { ArrowLeft, Loader2, Plus, Tag, Trash2, Edit } from 'lucide-react'
 
 const schema = z.object({
+  id: z.string().optional(),
   label: z.string().min(1, 'Nombre requerido'),
   type: z.enum(['loyalty', 'manual']),
   pct: z.coerce.number().positive().max(100, 'Máximo 100%'),
@@ -35,16 +36,45 @@ export default function AdminDiscountsPage() {
 
   async function onSubmit(data: FormData) {
     setLoading(true)
+    const method = data.id ? 'PUT' : 'POST'
     const res = await fetch('/api/admin/discounts', {
-      method: 'POST',
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     })
     setLoading(false)
     if (!res.ok) return
-    reset()
+    reset({ type: 'loyalty', min_purchases: 3, id: undefined, label: '', pct: 0 })
     setShowForm(false)
     loadDiscounts()
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este descuento? Si ya fue usado, no se podrá eliminar.')) return
+    
+    await fetch(`/api/admin/discounts?id=${id}`, { method: 'DELETE' })
+    loadDiscounts()
+  }
+
+  async function handleToggleActive(d: any) {
+    await fetch('/api/admin/discounts', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...d, active: !d.active }),
+    })
+    loadDiscounts()
+  }
+
+  function handleEdit(d: any) {
+    reset({
+      id: d.id,
+      label: d.label,
+      type: d.type,
+      pct: d.pct,
+      min_purchases: d.min_purchases || 0
+    })
+    setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
@@ -79,7 +109,12 @@ export default function AdminDiscountsPage() {
             </p>
           </div>
         </div>
-        <button onClick={() => setShowForm(!showForm)} style={{
+        <button onClick={() => {
+          if (showForm) {
+            reset({ type: 'loyalty', min_purchases: 3, id: undefined, label: '', pct: 0 })
+          }
+          setShowForm(!showForm)
+        }} style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
@@ -112,7 +147,7 @@ export default function AdminDiscountsPage() {
             color: 'var(--text)',
             marginBottom: '20px'
           }}>
-            Crear nueva regla de descuento
+            {watch('id') ? 'Editar regla de descuento' : 'Crear nueva regla de descuento'}
           </h3>
           <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
@@ -181,7 +216,7 @@ export default function AdminDiscountsPage() {
               opacity: loading ? 0.7 : 1,
               alignSelf: 'flex-start'
             }}>
-              {loading ? <Loader2 className="animate-spin" /> : 'Crear descuento'}
+              {loading ? <Loader2 className="animate-spin" /> : watch('id') ? 'Guardar cambios' : 'Crear descuento'}
             </button>
           </form>
         </div>
@@ -239,7 +274,9 @@ export default function AdminDiscountsPage() {
                 }}>
                   <Tag style={{ width: '20px', height: '20px', color: 'var(--green)' }} />
                 </div>
-                <span style={{
+                <button 
+                  onClick={() => handleToggleActive(d)}
+                  style={{
                   fontSize: '0.7rem',
                   fontWeight: 600,
                   textTransform: 'uppercase',
@@ -247,10 +284,12 @@ export default function AdminDiscountsPage() {
                   padding: '4px 8px',
                   borderRadius: '4px',
                   background: d.active ? 'rgba(34,197,94,0.1)' : 'rgba(100,116,139,0.1)',
-                  color: d.active ? 'var(--green)' : 'var(--muted)'
+                  color: d.active ? 'var(--green)' : 'var(--muted)',
+                  border: 'none',
+                  cursor: 'pointer'
                 }}>
                   {d.active ? 'Activo' : 'Inactivo'}
-                </span>
+                </button>
               </div>
               
               <h3 style={{
@@ -292,6 +331,22 @@ export default function AdminDiscountsPage() {
                       desde {d.min_purchases} compras
                     </span>
                   )}
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button onClick={() => handleEdit(d)} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: '32px', height: '32px', borderRadius: '8px',
+                    background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: 'none', cursor: 'pointer'
+                  }}>
+                    <Edit style={{ width: '16px', height: '16px' }} />
+                  </button>
+                  <button onClick={() => handleDelete(d.id)} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: '32px', height: '32px', borderRadius: '8px',
+                    background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', cursor: 'pointer'
+                  }}>
+                    <Trash2 style={{ width: '16px', height: '16px' }} />
+                  </button>
                 </div>
               </div>
             </div>

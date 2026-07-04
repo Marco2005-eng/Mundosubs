@@ -24,15 +24,22 @@ export default async function StorefrontPage({
     .eq('active', true)
     .order('name')
 
-  const { data: announcements } = await supabase
+  const { data: rawAnnouncements } = await supabase
     .from('announcements')
-    .select('id, title, body, type, created_at')
+    .select('id, title, body, type, created_at, coupon_id, coupons(status)')
     .eq('active', true)
     .or('starts_at.is.null,starts_at.lte.' + new Date().toISOString())
     .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString())
     .order('created_at', { ascending: false })
     .limit(4)
     .then((result) => result.error ? { data: [] } : result)
+
+  const announcements = (rawAnnouncements ?? []).filter((item: any) => {
+    if (item.type === 'promo' && item.coupon_id) {
+      return item.coupons?.status === 'active'
+    }
+    return true
+  })
 
   const discounts = user ? await getEligibleDiscounts(user.id) : []
   const items = (products ?? []).map((product) => {

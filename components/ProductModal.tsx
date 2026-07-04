@@ -82,7 +82,7 @@ export function ProductModal({
             <div className="space-y-3">
               <button 
                 type="button"
-                className="relative block mx-auto w-full max-w-[280px] sm:max-w-[320px] aspect-square group mt-4 mb-2 cursor-zoom-in focus:outline-none"
+                className="relative block mx-auto w-full max-w-[320px] sm:max-w-[500px] aspect-[4/3] sm:aspect-video group mt-4 mb-2 cursor-zoom-in focus:outline-none"
                 onClick={() => setIsFullscreen(true)}
               >
                 {/* Efecto de difuminado (Glow) detrás de la imagen */}

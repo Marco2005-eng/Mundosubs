@@ -103,8 +103,8 @@ export async function sendDiscountAssignedEmail(params: {
     'Tienes un descuento especial - MUNDOSUBS',
     layout(
       `Hola ${params.userName}!`,
-      `<p>Te hemos asignado un descuento de <strong>${params.discountPct}%</strong> en tu proxima compra.</p>
-      ${params.expiresAt ? `<p>Valido hasta: <strong>${params.expiresAt}</strong></p>` : '<p>Sin fecha de vencimiento.</p>'}
+      `<p>Te hemos asignado un descuento de <strong>${params.discountPct}%</strong> en tu próxima compra.</p>
+      ${params.expiresAt ? `<p>Válido hasta: <strong>${params.expiresAt}</strong></p>` : '<p>Sin fecha de vencimiento.</p>'}
       ${button('Ir a la tienda', APP_URL)}`
     )
   )
@@ -118,13 +118,13 @@ export async function sendSubscriptionExpiryEmail(params: {
   reminderType: '2_days' | 'expires_today'
 }) {
   const subjects = {
-    '2_days': `Tu suscripcion a ${params.productName} vence en 2 dias`,
-    expires_today: `Tu suscripcion a ${params.productName} vence hoy`,
+    '2_days': `Tu suscripción a ${params.productName} vence en 2 días`,
+    expires_today: `Tu suscripción a ${params.productName} vence hoy`,
   }
 
   const messages = {
-    '2_days': `Tu suscripcion vence el <strong>${params.expiresAt}</strong>. Puedes renovarla con tiempo para no perder acceso.`,
-    expires_today: `Tu suscripcion vence hoy, <strong>${params.expiresAt}</strong>.`,
+    '2_days': `Tu suscripción vence el <strong>${params.expiresAt}</strong>. Puedes renovarla con tiempo para no perder acceso.`,
+    expires_today: `Tu suscripción vence hoy, <strong>${params.expiresAt}</strong>.`,
   }
 
   await sendEmail(

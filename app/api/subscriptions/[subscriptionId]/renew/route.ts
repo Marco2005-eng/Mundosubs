@@ -21,7 +21,7 @@ export async function POST(
     .single()
 
   if (subscriptionError || !subscription) {
-    return NextResponse.json({ error: 'Suscripcion no encontrada' }, { status: 404 })
+    return NextResponse.json({ error: 'Suscripción no encontrada' }, { status: 404 })
   }
 
   const product = Array.isArray((subscription as any).products)

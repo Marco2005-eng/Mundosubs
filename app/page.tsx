@@ -253,7 +253,7 @@ export default async function StorefrontPage({
               <article className="promo-card promo-small promo-green">
                 <span>Próximamente</span>
                 <h3>Nuevos bundles digitales</h3>
-                <p>Combos especiales para streaming, musica y software.</p>
+                <p>Combos especiales para streaming, música y software.</p>
               </article>
             </div>
           </div>

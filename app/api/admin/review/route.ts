@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
           .single()
 
         if (currentSubscriptionError || !currentSubscription) {
-          return NextResponse.json({ error: currentSubscriptionError?.message || 'Suscripcion a renovar no encontrada' }, { status: 500 })
+          return NextResponse.json({ error: currentSubscriptionError?.message || 'Suscripción a renovar no encontrada' }, { status: 500 })
         }
 
         const currentExpiryMs = new Date(currentSubscription.expires_at).getTime()

@@ -13,7 +13,7 @@ const schema = z.object({
   name: z.string().min(1, 'Nombre requerido'),
   category: z.enum(['streaming', 'game', 'license', 'software', 'music']),
   price: z.coerce.number().positive('Precio debe ser mayor a 0'),
-  duration_days: z.coerce.number().int().positive('Duracion debe ser mayor a 0'),
+  duration_days: z.coerce.number().int().positive('Duración debe ser mayor a 0'),
   features: z.string(),
   active: z.boolean(),
   description: z.string().optional(),
@@ -26,7 +26,7 @@ const CATEGORIES = [
   { value: 'game', label: 'Juegos', code: 'GP' },
   { value: 'license', label: 'Licencia', code: 'KEY' },
   { value: 'software', label: 'Software', code: 'SW' },
-  { value: 'music', label: 'Musica', code: 'FM' },
+  { value: 'music', label: 'Música', code: 'FM' },
 ] as const
 
 export default function ProductFormPage() {
@@ -125,13 +125,13 @@ export default function ProductFormPage() {
     if (!url) return
 
     if (imageUrls.length >= 4) {
-      toast({ variant: 'destructive', title: 'Solo puedes agregar hasta 4 imagenes' })
+      toast({ variant: 'destructive', title: 'Solo puedes agregar hasta 4 imágenes' })
       return
     }
 
     const parsed = z.string().url().safeParse(url)
     if (!parsed.success) {
-      toast({ variant: 'destructive', title: 'URL de imagen invalida' })
+      toast({ variant: 'destructive', title: 'URL de imagen inválida' })
       return
     }
 
@@ -148,7 +148,7 @@ export default function ProductFormPage() {
     const remaining = 4 - imageUrls.length
 
     if (remaining <= 0) {
-      toast({ variant: 'destructive', title: 'Solo puedes agregar hasta 4 imagenes' })
+      toast({ variant: 'destructive', title: 'Solo puedes agregar hasta 4 imágenes' })
       return
     }
 
@@ -166,12 +166,12 @@ export default function ProductFormPage() {
     setUploadingImages(false)
 
     if (!res.ok) {
-      toast({ variant: 'destructive', title: result.error || 'No se pudieron subir las imagenes' })
+      toast({ variant: 'destructive', title: result.error || 'No se pudieron subir las imágenes' })
       return
     }
 
     setImageUrls((current) => [...current, ...(result.urls ?? [])].slice(0, 4))
-    toast({ title: 'Imagenes cargadas' })
+    toast({ title: 'Imágenes cargadas' })
   }
 
   return (
@@ -184,7 +184,7 @@ export default function ProductFormPage() {
           <div>
             <h1 style={titleStyle}>{isNew ? 'Nuevo producto' : 'Editar producto'}</h1>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-              {isNew ? 'Agrega un nuevo servicio al catalogo' : 'Modifica los detalles del producto'}
+              {isNew ? 'Agrega un nuevo servicio al catálogo' : 'Modifica los detalles del producto'}
             </p>
           </div>
         </div>
@@ -207,7 +207,7 @@ export default function ProductFormPage() {
           />
 
           <div>
-            <label style={labelStyle}>Categoria *</label>
+            <label style={labelStyle}>Categoría *</label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
               {CATEGORIES.map((cat) => (
                 <button
@@ -242,15 +242,15 @@ export default function ProductFormPage() {
               </div>
             </Field>
 
-            <Field label="Duracion (dias) *" error={errors.duration_days?.message}>
+            <Field label="Duración (días) *" error={errors.duration_days?.message}>
               <input type="number" {...register('duration_days')} className="input-dark" style={{ width: '100%' }} />
             </Field>
           </div>
 
-          <Field label="Descripcion del producto" error={errors.description?.message}>
+          <Field label="Descripción del producto" error={errors.description?.message}>
             <textarea
               {...register('description')}
-              placeholder="Escribe una breve descripcion del producto o servicio..."
+              placeholder="Escribe una breve descripción del producto o servicio..."
               className="input-dark"
               style={{
                 width: '100%',
@@ -261,7 +261,7 @@ export default function ProductFormPage() {
             />
           </Field>
 
-          <Field label="Caracteristicas (una por linea)">
+          <Field label="Características (una por linea)">
             <textarea
               {...register('features')}
               placeholder={'Calidad 4K\nCompartido hasta 5\nDescarga offline'}
@@ -285,7 +285,7 @@ export default function ProductFormPage() {
               <div>
                 <div style={{ fontWeight: 500, color: 'var(--text)', fontSize: '0.9rem' }}>Producto activo</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                  {active ? 'Visible en el catalogo publico' : 'Oculto del catalogo'}
+                  {active ? 'Visible en el catálogo público' : 'Oculto del catálogo'}
                 </div>
               </div>
             </div>
@@ -354,7 +354,7 @@ function ImageManager({
 
   return (
     <div>
-      <label style={labelStyle}>Imagenes del producto</label>
+      <label style={labelStyle}>Imágenes del producto</label>
       <div style={{ display: 'grid', gap: '12px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px' }}>
           <input
@@ -372,7 +372,7 @@ function ImageManager({
 
         <label style={uploadBoxStyle(atLimit || uploadingImages)}>
           {uploadingImages ? <Loader2 className="animate-spin" /> : <Upload style={{ width: 17, height: 17 }} />}
-          {uploadingImages ? 'Subiendo imagenes...' : 'Cargar desde la computadora'}
+          {uploadingImages ? 'Subiendo imágenes...' : 'Cargar desde la computadora'}
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp"
@@ -404,7 +404,7 @@ function ImageManager({
         </div>
 
         <p style={{ color: 'var(--muted)', fontSize: '0.75rem', margin: 0 }}>
-          Puedes combinar URLs e imagenes cargadas. Maximo 4 imagenes JPG, PNG o WEBP de hasta 2 MB cada una.
+          Puedes combinar URLs e imágenes cargadas. Máximo 4 imágenes JPG, PNG o WEBP de hasta 2 MB cada una.
         </p>
       </div>
     </div>

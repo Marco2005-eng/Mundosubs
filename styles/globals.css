@@ -901,6 +901,8 @@ textarea {
 }
 
 .about-page {
+  width: min(90%, 1100px);
+  margin: 0 auto;
   display: grid;
   gap: 26px;
   padding: 34px 0 54px;
@@ -940,6 +942,8 @@ textarea {
   font-weight: 900;
   letter-spacing: 1.4px;
   text-transform: uppercase;
+  display: block;
+  text-align: center;
 }
 
 .about-page-hero h1 {
@@ -950,6 +954,7 @@ textarea {
   letter-spacing: 0;
   line-height: 1.05;
   margin: 12px 0 14px;
+  text-align: center;
 }
 
 .about-page-hero p {
@@ -957,7 +962,8 @@ textarea {
   font-size: 1rem;
   line-height: 1.65;
   max-width: 720px;
-  margin: 0;
+  margin: 0 auto;
+  text-align: justify;
 }
 
 .about-values {
@@ -997,7 +1003,7 @@ textarea {
 }
 
 .about-section {
-  width: min(90%, 1100px);
+  width: 100%;
   margin: 44px auto 0;
   display: grid;
   grid-template-columns: minmax(0, 0.88fr) minmax(320px, 1.12fr);
@@ -1022,7 +1028,7 @@ textarea {
 
 .about-eyebrow {
   width: max-content;
-  margin-bottom: 12px;
+  margin: 0 auto 12px;
   border-radius: 999px;
   background: rgba(124, 58, 237, 0.1);
   color: var(--accent2);
@@ -1041,6 +1047,7 @@ textarea {
   letter-spacing: 0;
   line-height: 1.12;
   margin: 0 0 12px;
+  text-align: center;
 }
 
 .about-copy p,
@@ -1048,6 +1055,7 @@ textarea {
   color: var(--muted);
   font-size: 0.92rem;
   line-height: 1.65;
+  text-align: justify;
 }
 
 .about-history {
@@ -1895,6 +1903,8 @@ textarea {
 .app-shell {
   min-height: 100vh;
   background: var(--bg);
+  display: flex;
+  flex-direction: column;
 }
 
 .app-header {
@@ -2043,6 +2053,7 @@ textarea {
   width: min(90%, 1200px);
   margin: 0 auto;
   padding: 30px 0;
+  flex: 1;
 }
 
 .app-main-home {

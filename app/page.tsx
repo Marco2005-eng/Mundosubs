@@ -5,6 +5,7 @@ import { getBestDiscount, getEligibleDiscounts } from '@/lib/discounts'
 import { StorefrontClient } from './StorefrontClient'
 import { StorefrontHeroSlider } from '@/components/StorefrontHeroSlider'
 import { CouponCodePill } from '@/components/CouponCodePill'
+import { ReviewsSection } from '@/components/ReviewsSection'
 
 export const revalidate = 60
 
@@ -79,7 +80,7 @@ export default async function StorefrontPage({
           <div className="section-heading">
             <div>
               <span>Explorar por área</span>
-              <h2>Qué buscas hoy</h2>
+              <h2>¿Qué buscas hoy?</h2>
             </div>
           </div>
           <div className="category-showcase">
@@ -307,6 +308,8 @@ export default async function StorefrontPage({
           </div>
         </div>
       </section>
+
+      <ReviewsSection />
 
       <section className="payment-strip" aria-label="Métodos de pago aceptados">
         <span>Métodos de pago aceptados</span>

@@ -19,6 +19,7 @@ export interface Product {
   image_url?: string | null
   image_urls?: string[] | null
   active: boolean
+  description?: string | null
 }
 
 interface ProductCardProps {

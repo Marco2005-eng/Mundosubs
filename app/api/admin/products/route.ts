@@ -16,6 +16,7 @@ const schema = z.object({
   ),
   image_urls: z.array(z.string().url()).max(4).optional().default([]),
   active: z.boolean(),
+  description: z.string().optional().nullable(),
 })
 
 export async function POST(req: NextRequest) {

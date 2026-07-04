@@ -16,6 +16,7 @@ const schema = z.object({
   duration_days: z.coerce.number().int().positive('Duracion debe ser mayor a 0'),
   features: z.string(),
   active: z.boolean(),
+  description: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -47,6 +48,7 @@ export default function ProductFormPage() {
         price: 0,
         duration_days: 30,
         features: '',
+        description: '',
       },
     })
 
@@ -71,6 +73,7 @@ export default function ProductFormPage() {
             duration_days: product.duration_days ?? 30,
             features: product.features?.join('\n') ?? '',
             active: Boolean(product.active),
+            description: product.description ?? '',
           })
 
           const gallery = Array.isArray(product.image_urls) ? product.image_urls : []
@@ -243,6 +246,20 @@ export default function ProductFormPage() {
               <input type="number" {...register('duration_days')} className="input-dark" style={{ width: '100%' }} />
             </Field>
           </div>
+
+          <Field label="Descripcion del producto" error={errors.description?.message}>
+            <textarea
+              {...register('description')}
+              placeholder="Escribe una breve descripcion del producto o servicio..."
+              className="input-dark"
+              style={{
+                width: '100%',
+                minHeight: '80px',
+                resize: 'vertical',
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            />
+          </Field>
 
           <Field label="Caracteristicas (una por linea)">
             <textarea

@@ -120,6 +120,12 @@ export function ProductModal({
 
           <p className="text-sm text-muted-foreground">{product.duration_days} días de acceso</p>
 
+          {product.description && (
+            <p className="text-sm text-muted-foreground bg-muted/20 p-3 rounded-lg border border-border/40 whitespace-pre-wrap leading-relaxed">
+              {product.description}
+            </p>
+          )}
+
           {product.features?.length > 0 && (
             <ul className="space-y-1">
               {product.features.map((f, i) => (

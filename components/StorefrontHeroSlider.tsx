@@ -17,7 +17,7 @@ const SLIDES = [
   },
   {
     badge: 'Música sin anuncios',
-    title: 'Spotify Premium por S/19.90 al mes',
+    title: 'Spotify Premium por S/9.90 al mes',
     copy: 'Escucha sin límites, descarga música offline y disfruta desde cualquier dispositivo.',
     accent: 'cyan',
     Icon: Music2,

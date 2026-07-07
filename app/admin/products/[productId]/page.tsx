@@ -116,8 +116,12 @@ export default function ProductFormPage() {
       return
     }
 
-    toast({ title: isNew ? 'Producto creado exitosamente' : 'Producto actualizado' })
+    toast({ 
+      title: isNew ? '¡Producto creado!' : '¡Producto actualizado!',
+      description: 'Actualizando el catálogo en tiempo real...',
+    })
     router.push('/admin/products')
+    router.refresh()
   }
 
   function addImageUrl() {

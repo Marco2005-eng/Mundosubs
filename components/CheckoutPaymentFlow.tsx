@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { CheckCircle, Loader2, Tag } from 'lucide-react'
 import { PaymentMethodsPanel } from '@/components/PaymentMethodsPanel'
 import { VoucherUpload } from '@/components/VoucherUpload'
@@ -39,6 +40,7 @@ export function CheckoutPaymentFlow({
     uploadedAt: string | null
   } | null
 }) {
+  const router = useRouter()
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(methods[0] ?? null)
   const [currentTotalLabel, setCurrentTotalLabel] = useState(totalLabel)
   const [couponCode, setCouponCode] = useState('')
@@ -65,6 +67,7 @@ export function CheckoutPaymentFlow({
 
       setCurrentTotalLabel(result.order.amountLabel)
       setCouponMessage(`${result.coupon.code}: ${result.order.discountPct}% de descuento aplicado`)
+      router.refresh()
     } catch (err: any) {
       setCouponError(err.message)
     } finally {

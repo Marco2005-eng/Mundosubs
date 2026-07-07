@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { DiscountBadge } from '@/components/DiscountBadge'
 import { formatPEN, applyDiscount } from '@/lib/utils'
-import { CheckCircle, ShoppingCart } from 'lucide-react'
+import { CheckCircle, ShoppingCart, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react'
 import type { Product } from '@/components/ProductCard'
 
 interface ProductModalProps {
@@ -36,23 +36,109 @@ export function ProductModal({
   const images = (product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : []).slice(0, 4)
   const logoImage = images[0]
   const galleryImages = images.length > 1 ? images.slice(1) : images
+  
   const [selectedImage, setSelectedImage] = useState(0)
   const activeGalleryImage = galleryImages[selectedImage] ?? galleryImages[0]
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isImageLoading, setIsImageLoading] = useState(true)
+  const [imageError, setImageError] = useState(false)
+  
+  const [isPaused, setIsPaused] = useState(false)
+  const pauseTimeoutRef = useRef<number | null>(null)
+  const autoPlayIntervalRef = useRef<number | null>(null)
+
+  // Touch Swipe State
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+
+  // Reset errors and loading when selected image changes
+  useEffect(() => {
+    setIsImageLoading(true)
+    setImageError(false)
+  }, [selectedImage])
 
   useEffect(() => {
     setSelectedImage(0)
   }, [product.id, open])
 
+  // Cíclico
+  const handlePrev = () => {
+    if (galleryImages.length <= 1) return
+    setSelectedImage((current) => (current === 0 ? galleryImages.length - 1 : current - 1))
+    triggerInteractionPause()
+  }
+
+  const handleNext = () => {
+    if (galleryImages.length <= 1) return
+    setSelectedImage((current) => (current === galleryImages.length - 1 ? 0 : current + 1))
+    triggerInteractionPause()
+  }
+
+  const triggerInteractionPause = () => {
+    setIsPaused(true)
+    if (pauseTimeoutRef.current) {
+      window.clearTimeout(pauseTimeoutRef.current)
+    }
+    // Reanudar después de 4 segundos de inactividad
+    pauseTimeoutRef.current = window.setTimeout(() => {
+      setIsPaused(false)
+    }, 4000)
+  }
+
+  // Auto-play interval
   useEffect(() => {
-    if (!open || galleryImages.length <= 1) return
+    if (!open || galleryImages.length <= 1 || isPaused) {
+      if (autoPlayIntervalRef.current) {
+        window.clearInterval(autoPlayIntervalRef.current)
+      }
+      return
+    }
 
-    const timer = window.setInterval(() => {
+    autoPlayIntervalRef.current = window.setInterval(() => {
       setSelectedImage((current) => (current + 1) % galleryImages.length)
-    }, 3500)
+    }, 5000)
 
-    return () => window.clearInterval(timer)
-  }, [galleryImages.length, open])
+    return () => {
+      if (autoPlayIntervalRef.current) {
+        window.clearInterval(autoPlayIntervalRef.current)
+      }
+    }
+  }, [galleryImages.length, open, isPaused])
+
+  // Clean timeout
+  useEffect(() => {
+    return () => {
+      if (pauseTimeoutRef.current) {
+        window.clearTimeout(pauseTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  // Mobile Swipe Gesture Handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    triggerInteractionPause()
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    const distance = touchStart - touchEnd
+    const minSwipeDistance = 50
+    if (distance > minSwipeDistance) {
+      handleNext()
+    } else if (distance < -minSwipeDistance) {
+      handlePrev()
+    }
+  }
+
+  // Preload next image index
+  const nextImageIndex = (selectedImage + 1) % galleryImages.length
+  const nextImageUrl = galleryImages[nextImageIndex]
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -80,28 +166,134 @@ export function ProductModal({
         <div className="space-y-4">
           {activeGalleryImage && (
             <div className="space-y-3">
-              <button 
-                type="button"
-                className="relative block mx-auto w-full max-w-[320px] sm:max-w-[500px] aspect-[4/3] sm:aspect-video group mt-4 mb-2 cursor-zoom-in focus:outline-none"
-                onClick={() => setIsFullscreen(true)}
+              {/* Contenedor de la Imagen Principal */}
+              <div 
+                className="relative mx-auto w-full max-w-[320px] sm:max-w-[500px] aspect-[4/3] sm:aspect-video group mt-4 mb-2 overflow-visible"
+                onMouseEnter={() => setIsPaused(true)}
+                onMouseLeave={() => setIsPaused(false)}
               >
-                {/* Efecto de difuminado (Glow) detrás de la imagen */}
-                <img src={activeGalleryImage} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-50 scale-105 translate-y-4 rounded-3xl transition-transform duration-500 group-hover:scale-110" aria-hidden="true" />
-                {/* Imagen principal sin borde blanco */}
-                <div className="relative w-full h-full flex items-center justify-center rounded-3xl overflow-hidden shadow-[0_20px_50px_-12px_rgba(0,0,0,0.3)] border border-white/20 bg-black/5">
-                  <img src={activeGalleryImage} alt="" className="w-full h-full object-cover" loading="lazy" />
+                {/* Glow detrás de la imagen (Efecto difuminado) */}
+                {!imageError && (
+                  <img 
+                    src={activeGalleryImage} 
+                    alt="" 
+                    className={`absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-105 translate-y-3 rounded-3xl transition-opacity duration-300 ${isImageLoading ? 'opacity-0' : 'opacity-40'}`} 
+                    aria-hidden="true" 
+                  />
+                )}
+
+                {/* Contenedor con borde y sombra */}
+                <div 
+                  className="relative w-full h-full flex items-center justify-center rounded-3xl overflow-hidden shadow-[0_15px_35px_-8px_rgba(0,0,0,0.4)] border border-white/10 bg-black/10 touch-pan-y"
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  {/* Skeleton Shimmer Loader */}
+                  {isImageLoading && !imageError && (
+                    <div className="absolute inset-0 bg-neutral-800 animate-pulse flex items-center justify-center">
+                      <div className="w-10 h-10 border-4 border-violet-500/20 border-t-violet-500 rounded-full animate-spin"></div>
+                    </div>
+                  )}
+
+                  {/* Fallback en caso de error */}
+                  {imageError ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-900 text-neutral-400 p-4 text-center">
+                      <ImageIcon className="h-10 w-10 text-neutral-500" />
+                      <span className="text-xs">No se pudo cargar la imagen</span>
+                    </div>
+                  ) : (
+                    <img 
+                      src={activeGalleryImage} 
+                      alt="" 
+                      className={`w-full h-full object-cover cursor-zoom-in transition-all duration-350 ease-in-out ${isImageLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`} 
+                      onLoad={() => setIsImageLoading(false)}
+                      onError={() => {
+                        setIsImageLoading(false)
+                        setImageError(true)
+                      }}
+                      onClick={() => setIsFullscreen(true)}
+                    />
+                  )}
+
+                  {/* Flechas de Navegación Lateral (Ocultas en desktop si no hay hover) */}
+                  {galleryImages.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handlePrev()
+                        }}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 rounded-full bg-black/50 text-white backdrop-blur-sm border border-white/10 hover:bg-black/80 active:scale-95 transition-all md:opacity-0 md:group-hover:opacity-100 focus:outline-none z-10"
+                        style={{ minWidth: '44px', minHeight: '44px' }}
+                        aria-label="Imagen anterior"
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleNext()
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 rounded-full bg-black/50 text-white backdrop-blur-sm border border-white/10 hover:bg-black/80 active:scale-95 transition-all md:opacity-0 md:group-hover:opacity-100 focus:outline-none z-10"
+                        style={{ minWidth: '44px', minHeight: '44px' }}
+                        aria-label="Siguiente imagen"
+                      >
+                        <ChevronRight className="h-6 w-6" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Dots Superpuestos en la Parte Inferior */}
+                  {galleryImages.length > 1 && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/5 z-10">
+                      {galleryImages.map((_, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedImage(index)
+                            triggerInteractionPause()
+                          }}
+                          className={`rounded-full transition-all duration-300 focus:outline-none ${selectedImage === index ? 'w-4 h-2 bg-violet-400' : 'w-2 h-2 bg-white/50 hover:bg-white'}`}
+                          style={{ minWidth: '8px', minHeight: '8px' }}
+                          aria-label={`Ir a imagen ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </button>
+              </div>
+
+              {/* Precarga de todas las imágenes de la galería */}
+              {galleryImages.map((url, index) => (
+                <img key={`preload-modal-${index}`} src={url} alt="" className="hidden" aria-hidden="true" />
+              ))}
+
+              {/* Galería de Miniaturas (Thumbnails) */}
               {galleryImages.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1 justify-center mt-4">
+                <div className="flex gap-2 overflow-x-auto pb-2 justify-start sm:justify-center mt-3 snap-x snap-mandatory scroll-smooth scrollbar-thin select-none">
                   {galleryImages.map((url, index) => (
                     <button
                       key={`${url}-${index}`}
                       type="button"
-                      onClick={() => setSelectedImage(index)}
-                      className={`h-16 w-16 shrink-0 rounded-xl border sm:h-20 sm:w-20 overflow-hidden transition-all ${selectedImage === index ? 'ring-2 ring-violet-500 scale-105 shadow-md' : 'opacity-60 hover:opacity-100'}`}
+                      onClick={() => {
+                        setSelectedImage(index)
+                        triggerInteractionPause()
+                      }}
+                      className={`h-16 w-16 shrink-0 rounded-xl border sm:h-20 sm:w-20 overflow-hidden transition-all duration-200 snap-center ${selectedImage === index ? 'ring-2 ring-violet-500 scale-105 shadow-md border-transparent' : 'opacity-65 hover:opacity-100 hover:scale-102'}`}
                     >
-                      <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
+                      <img 
+                        src={url} 
+                        alt="" 
+                        className="h-full w-full object-cover" 
+                        loading="lazy" 
+                        referrerPolicy="no-referrer" 
+                      />
                     </button>
                   ))}
                 </div>

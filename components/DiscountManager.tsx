@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -38,6 +39,7 @@ export function DiscountManager({
   userDiscounts: UserDiscount[]
   onRefresh?: () => void
 }) {
+  const router = useRouter()
   const [showForm, setShowForm] = useState(false)
   const [discountId, setDiscountId] = useState('')
   const [expiresAt, setExpiresAt] = useState('')
@@ -70,12 +72,17 @@ export function DiscountManager({
         throw new Error('Error al asignar')
       }
       
-      toast({ title: 'Descuento asignado correctamente', variant: 'default' })
+      toast({ 
+        title: '¡Descuento asignado!', 
+        description: 'Sincronizando cambios en el perfil en tiempo real...',
+        variant: 'default' 
+      })
       setDiscountId('')
       setExpiresAt('')
       setNote('')
       setShowForm(false)
       onRefresh?.()
+      router.refresh()
     } catch (err) {
       toast({ variant: 'destructive', title: 'Error al asignar descuento' })
     } finally {

@@ -45,7 +45,10 @@ export function VoucherReview({ orderId }: VoucherReviewProps) {
       if (!res.ok) {
         throw new Error(data.error || 'Error al procesar')
       }
-      toast({ title: action === 'approve' ? 'Pedido aprobado' : 'Pedido rechazado' })
+      toast({ 
+        title: action === 'approve' ? '¡Pedido aprobado!' : 'Pedido rechazado',
+        description: 'Sincronizando la bandeja de comprobantes en tiempo real...',
+      })
       router.push('/admin/vouchers')
       router.refresh()
     } catch {

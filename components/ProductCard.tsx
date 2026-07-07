@@ -39,13 +39,17 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export function ProductCard({ product, discountPct = 0, discountLabel, onAddToCart }: ProductCardProps) {
   const [open, setOpen] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   const finalPrice = applyDiscount(product.price, discountPct)
   const images = (product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : []).slice(0, 4)
   const primaryImage = images[0]
 
   return (
     <>
-      <Card className="ds-card flex flex-col transition-all hover:shadow-lg overflow-hidden border-border/50 bg-card">
+      <Card 
+        onMouseEnter={() => setIsHovered(true)}
+        className="ds-card flex flex-col transition-all hover:shadow-lg overflow-hidden border-border/50 bg-card"
+      >
         {/* Banner Superior con Logo y Difuminado */}
         <div className="relative h-32 w-full flex items-center justify-center overflow-hidden bg-muted/20">
           
@@ -133,6 +137,11 @@ export function ProductCard({ product, discountPct = 0, discountLabel, onAddToCa
           </div>
         </CardFooter>
       </Card>
+      
+      {/* Precarga de imágenes al hacer hover sobre la tarjeta */}
+      {isHovered && images.map((url, idx) => (
+        <img key={`preload-hover-${idx}`} src={url} alt="" className="hidden" aria-hidden="true" />
+      ))}
 
       <ProductModal
         product={product}

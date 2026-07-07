@@ -12,6 +12,7 @@ const SLIDES = [
     accent: 'violet',
     Icon: Tv,
     primary: 'Ver suscripciones',
+    primaryHref: '/dashboard',
     secondary: 'Cómo funciona',
     secondaryHref: '#como-funciona',
   },
@@ -22,6 +23,7 @@ const SLIDES = [
     accent: 'cyan',
     Icon: Music2,
     primary: 'Ver oferta',
+    primaryHref: '/?category=music#catalog',
     secondary: 'Promos activas',
     secondaryHref: '#promos',
   },
@@ -32,6 +34,7 @@ const SLIDES = [
     accent: 'green',
     Icon: Gamepad2,
     primary: 'Ver juegos',
+    primaryHref: '/?category=game#catalog',
     secondary: 'Ir al catálogo',
     secondaryHref: '#catalog',
   },
@@ -42,6 +45,7 @@ const SLIDES = [
     accent: 'blue',
     Icon: Palette,
     primary: 'Ver software',
+    primaryHref: '/?category=software#catalog',
     secondary: 'Explorar categorías',
     secondaryHref: '#categorias',
   },
@@ -75,9 +79,9 @@ export function StorefrontHeroSlider({ userLoggedIn }: { userLoggedIn: boolean }
         <h1>{slide.title}</h1>
         <p>{slide.copy}</p>
         <div className="hero-actions">
-          <a href="#catalog" className="hero-primary">{slide.primary}</a>
+          <Link href={slide.primaryHref} className="hero-primary">{slide.primary}</Link>
           {userLoggedIn ? (
-            <a href={slide.secondaryHref} className="hero-secondary">{slide.secondary}</a>
+            <Link href={slide.secondaryHref} className="hero-secondary">{slide.secondary}</Link>
           ) : (
             <Link href="/auth/register" className="hero-secondary">Crear cuenta</Link>
           )}

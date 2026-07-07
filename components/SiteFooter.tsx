@@ -90,11 +90,11 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="site-footer-section">
-          <h2>Redes Sociales</h2>
-          <div className="site-footer-links">
-            {socialLinks.length ? (
-              socialLinks.map((item) => {
+        {socialLinks.length > 0 && (
+          <div className="site-footer-section">
+            <h2>Redes Sociales</h2>
+            <div className="site-footer-links">
+              {socialLinks.map((item) => {
                 const Icon = item.icon
                 return (
                   <a key={item.label} href={item.href} target="_blank" rel="noreferrer">
@@ -103,12 +103,10 @@ export function SiteFooter() {
                     <ExternalLink aria-hidden="true" />
                   </a>
                 )
-              })
-            ) : (
-              <span className="site-footer-muted">Agrega tus redes desde Configuración.</span>
-            )}
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="site-footer-section">
           <h2>Empresa y Legal</h2>

@@ -1159,9 +1159,20 @@ textarea {
   width: min(90%, 1120px);
   margin: 0 auto;
   padding: 28px 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(150px, 0.7fr));
-  gap: 22px;
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.site-footer-brand {
+  flex: 1.4;
+  min-width: 260px;
+}
+
+.site-footer-section {
+  flex: 0.7;
+  min-width: 160px;
 }
 
 .site-footer-logo {
@@ -1823,7 +1834,7 @@ textarea {
 
   .site-footer-inner {
     width: 100%;
-    grid-template-columns: 1fr;
+    flex-direction: column;
     gap: 18px;
     padding: 24px 16px 92px;
   }

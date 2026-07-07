@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Search, ShoppingCart, Star } from 'lucide-react'
 import { useCartStore } from '@/store/cart'
 import type { Product } from '@/components/ProductCard'
@@ -45,6 +45,15 @@ export function StorefrontClient({
   const [selectedProduct, setSelectedProduct] = useState<ResolvedProduct | null>(null)
   const { addItem } = useCartStore()
   const { toast } = useToast()
+
+  // Sincronizar estado cuando cambian las props iniciales (URL searchParams)
+  useEffect(() => {
+    setCategory(initialCategory ?? '')
+  }, [initialCategory])
+
+  useEffect(() => {
+    setQuery(initialQuery ?? '')
+  }, [initialQuery])
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()

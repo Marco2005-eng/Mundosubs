@@ -94,6 +94,12 @@ export function StorefrontClient({
     const next = category === cat ? '' : cat
     setCategory(next)
     updateUrl(next, query)
+    
+    // Desplazar al catálogo suavemente para mantener la visibilidad correcta
+    const element = document.getElementById('catalog')
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
   }
 
   function handleSearch(value: string) {

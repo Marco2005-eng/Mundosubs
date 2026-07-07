@@ -203,17 +203,26 @@ export function ProductModal({
                       <span className="text-xs">No se pudo cargar la imagen</span>
                     </div>
                   ) : (
-                    <img 
-                      src={activeGalleryImage} 
-                      alt="" 
-                      className={`w-full h-full object-cover cursor-zoom-in transition-all duration-350 ease-in-out ${isImageLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`} 
-                      onLoad={() => setIsImageLoading(false)}
-                      onError={() => {
-                        setIsImageLoading(false)
-                        setImageError(true)
-                      }}
-                      onClick={() => setIsFullscreen(true)}
-                    />
+                    <>
+                      {/* Fondo desenfocado sutil de la misma imagen para rellenar espacios vacíos */}
+                      <img 
+                        src={activeGalleryImage} 
+                        alt="" 
+                        className={`absolute inset-0 w-full h-full object-cover blur-xl opacity-25 scale-105 select-none pointer-events-none transition-opacity duration-350 ${isImageLoading ? 'opacity-0' : 'opacity-25'}`} 
+                        aria-hidden="true" 
+                      />
+                      <img 
+                        src={activeGalleryImage} 
+                        alt="" 
+                        className={`relative z-10 w-full h-full object-contain cursor-zoom-in transition-all duration-350 ease-in-out ${isImageLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`} 
+                        onLoad={() => setIsImageLoading(false)}
+                        onError={() => {
+                          setIsImageLoading(false)
+                          setImageError(true)
+                        }}
+                        onClick={() => setIsFullscreen(true)}
+                      />
+                    </>
                   )}
 
                   {/* Flechas de Navegación Lateral (Ocultas en desktop si no hay hover) */}
@@ -287,13 +296,22 @@ export function ProductModal({
                       }}
                       className={`h-16 w-16 shrink-0 rounded-xl border sm:h-20 sm:w-20 overflow-hidden transition-all duration-200 snap-center ${selectedImage === index ? 'ring-2 ring-violet-500 scale-105 shadow-md border-transparent' : 'opacity-65 hover:opacity-100 hover:scale-102'}`}
                     >
-                      <img 
-                        src={url} 
-                        alt="" 
-                        className="h-full w-full object-cover" 
-                        loading="lazy" 
-                        referrerPolicy="no-referrer" 
-                      />
+                      <div className="relative w-full h-full flex items-center justify-center bg-neutral-900/40 p-1">
+                        {/* Fondo difuminado sutil para la miniatura */}
+                        <img 
+                          src={url} 
+                          alt="" 
+                          className="absolute inset-0 h-full w-full object-cover blur-sm opacity-20 pointer-events-none" 
+                          aria-hidden="true"
+                        />
+                        <img 
+                          src={url} 
+                          alt="" 
+                          className="relative z-10 h-full w-full object-contain" 
+                          loading="lazy" 
+                          referrerPolicy="no-referrer" 
+                        />
+                      </div>
                     </button>
                   ))}
                 </div>

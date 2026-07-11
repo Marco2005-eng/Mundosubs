@@ -53,6 +53,7 @@ export default async function AdminPage() {
     { label: 'Usuarios', href: '/admin/users', icon: Users, desc: `${totalUsers ?? 0} registrados` },
     { label: 'Suscripciones', href: '/admin/subscriptions', icon: ShoppingBag, desc: `${activeSubscriptions ?? 0} activas` },
     { label: 'Pedidos', href: '/admin/orders', icon: FileText, desc: `${approvedOrdersCount} aprobados` },
+    { label: 'Reportes', href: '/admin/reports', icon: BarChart3, desc: 'Por usuario, categ. y prod.' },
     { label: 'Finanzas', href: '/admin/finances', icon: BarChart3, desc: 'Reportes y egresos' },
     { label: 'Pagos', href: '/admin/payments', icon: QrCode, desc: 'QR y cuentas' },
     { label: 'Descuentos', href: '/admin/discounts', icon: Tag, desc: 'Gestionar reglas' },

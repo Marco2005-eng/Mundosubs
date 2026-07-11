@@ -9,6 +9,7 @@ import { PrintButton } from '@/components/PrintButton'
 type SearchParams = {
   from?: string
   to?: string
+  category?: string
 }
 
 type Point = {
@@ -81,6 +82,7 @@ export default async function FinancePrintPage({ searchParams }: { searchParams:
   const now = new Date()
   const from = parseDate(searchParams.from, new Date(now.getFullYear(), now.getMonth(), 1))
   const to = endOfDay(parseDate(searchParams.to, now))
+  const selectedCategory = searchParams.category || ''
   const supabase = createServiceClient()
 
   const [{ data: orders }, { data: expenses }] = await Promise.all([
@@ -99,7 +101,13 @@ export default async function FinancePrintPage({ searchParams }: { searchParams:
       .order('occurred_at', { ascending: true }),
   ])
 
-  const orderRows = orders ?? []
+  let orderRows = orders ?? []
+  let expenseRows = expenses ?? []
+  if (selectedCategory) {
+    orderRows = orderRows.filter((order: any) => order.products?.category === selectedCategory)
+    expenseRows = []
+  }
+
   const profileIds = Array.from(new Set(orderRows.map((order: any) => order.user_id).filter(Boolean)))
   const { data: profiles } = profileIds.length
     ? await supabase.from('profiles').select('id, email, full_name').in('id', profileIds)
@@ -109,7 +117,6 @@ export default async function FinancePrintPage({ searchParams }: { searchParams:
     ...order,
     users: profileMap.get(order.user_id) ?? null,
   }))
-  const expenseRows = expenses ?? []
   const totalIncome = incomeRows.reduce((sum: number, order: any) => sum + numberValue(order.amount), 0)
   const totalExpenses = expenseRows.reduce((sum: number, expense: any) => sum + numberValue(expense.amount), 0)
   const profit = totalIncome - totalExpenses

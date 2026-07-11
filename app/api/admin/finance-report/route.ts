@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
   const format = url.searchParams.get('format') || 'csv'
   const from = parseDate(url.searchParams.get('from'), new Date(now.getFullYear(), now.getMonth(), 1))
   const to = endOfDay(parseDate(url.searchParams.get('to'), now))
+  const selectedCategory = url.searchParams.get('category') || ''
   const supabase = createServiceClient()
 
   const [{ data: orders }, { data: expenses }] = await Promise.all([
@@ -54,27 +55,37 @@ export async function GET(req: NextRequest) {
       .order('occurred_at', { ascending: true }),
   ])
 
-  const orderRows = orders ?? []
+  let orderRows = orders ?? []
+  let expenseRows = expenses ?? []
+  if (selectedCategory) {
+    orderRows = orderRows.filter((order: any) => order.products?.category === selectedCategory)
+    expenseRows = []
+  }
+
   const profileIds = Array.from(new Set(orderRows.map((order: any) => order.user_id).filter(Boolean)))
   const { data: profiles } = profileIds.length
     ? await supabase.from('profiles').select('id, email, full_name').in('id', profileIds)
     : { data: [] }
   const profileMap = new Map((profiles ?? []).map((profile: any) => [profile.id, profile]))
 
+  const totalIncome = orderRows.reduce((sum: number, o: any) => sum + (parseFloat(String(o.amount)) || 0), 0)
+  const totalExpenses = expenseRows.reduce((sum: number, e: any) => sum + (parseFloat(String(e.amount)) || 0), 0)
+  const profit = totalIncome - totalExpenses
+
   const rows = [
     ['tipo', 'fecha', 'detalle', 'categoria', 'cliente_proveedor', 'monto'],
     ...orderRows.map((order: any) => {
       const profile = profileMap.get(order.user_id)
       return [
-      'ingreso',
-      new Date(order.created_at).toLocaleDateString('es-PE'),
-      order.products?.name || `Pedido ${order.id}`,
-      order.products?.category || '',
-      profile?.full_name || profile?.email || '',
-      order.amount,
+        'ingreso',
+        new Date(order.created_at).toLocaleDateString('es-PE'),
+        order.products?.name || `Pedido ${order.id}`,
+        order.products?.category || '',
+        profile?.full_name || profile?.email || '',
+        order.amount,
       ]
     }),
-    ...(expenses ?? []).map((expense: any) => [
+    ...expenseRows.map((expense: any) => [
       'egreso',
       new Date(expense.occurred_at).toLocaleDateString('es-PE'),
       expense.label,
@@ -82,6 +93,9 @@ export async function GET(req: NextRequest) {
       expense.vendor || '',
       expense.amount,
     ]),
+    ['TOTAL INGRESOS', '', '', '', '', totalIncome],
+    ['TOTAL EGRESOS', '', '', '', '', totalExpenses],
+    ['UTILIDAD NETA', '', '', '', '', profit]
   ]
 
   if (format === 'xls') {
@@ -94,12 +108,13 @@ export async function GET(req: NextRequest) {
     th { background: #5c35b0; color: #ffffff; }
     th, td { border: 1px solid #cbd5e1; padding: 8px; }
     td.amount { mso-number-format:"0.00"; }
+    tr.total-row { font-weight: bold; background: #f1f5f9; }
   </style>
 </head>
 <body>
   <table>
     ${rows.map((row, index) => `
-      <tr>
+      <tr${index >= rows.length - 3 ? ' class="total-row"' : ''}>
         ${row.map((cell, cellIndex) => index === 0
           ? `<th>${htmlCell(cell)}</th>`
           : `<td${cellIndex === 5 ? ' class="amount"' : ''}>${htmlCell(cell)}</td>`

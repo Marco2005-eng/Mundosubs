@@ -35,9 +35,16 @@ export default function ProductFormPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
-  const [uploadingImages, setUploadingImages] = useState(false)
-  const [imageUrls, setImageUrls] = useState<string[]>([])
-  const [imageUrlDraft, setImageUrlDraft] = useState('')
+  
+  // Separated Image and Gallery State
+  const [productIcon, setProductIcon] = useState<string>('')
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([])
+  
+  const [iconUrlDraft, setIconUrlDraft] = useState('')
+  const [galleryUrlDraft, setGalleryUrlDraft] = useState('')
+  
+  const [uploadingIcon, setUploadingIcon] = useState(false)
+  const [uploadingGallery, setUploadingGallery] = useState(false)
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } =
     useForm<FormData>({
@@ -77,7 +84,11 @@ export default function ProductFormPage() {
           })
 
           const gallery = Array.isArray(product.image_urls) ? product.image_urls : []
-          setImageUrls((gallery.length ? gallery : product.image_url ? [product.image_url] : []).slice(0, 4))
+          const mainIcon = product.image_url ?? gallery[0] ?? ''
+          const secondary = gallery.filter((url: string) => url !== mainIcon).slice(0, 3)
+          
+          setProductIcon(mainIcon)
+          setGalleryUrls(secondary)
         }
       })
       .catch(() => {
@@ -93,11 +104,14 @@ export default function ProductFormPage() {
 
   async function onSubmit(data: FormData) {
     setLoading(true)
-    const normalizedImageUrls = imageUrls.map((url) => url.trim()).filter(Boolean).slice(0, 4)
+    const normalizedIcon = productIcon.trim()
+    const normalizedGallery = galleryUrls.map((url) => url.trim()).filter(Boolean).slice(0, 3)
+    const allUrls = normalizedIcon ? [normalizedIcon, ...normalizedGallery] : normalizedGallery
+
     const payload = {
       ...data,
-      image_url: normalizedImageUrls[0] ?? null,
-      image_urls: normalizedImageUrls,
+      image_url: normalizedIcon || null,
+      image_urls: allUrls,
       features: data.features.split('\n').map((f) => f.trim()).filter(Boolean),
     }
 
@@ -124,35 +138,71 @@ export default function ProductFormPage() {
     router.refresh()
   }
 
-  function addImageUrl() {
-    const url = imageUrlDraft.trim()
+  // Icon handlers
+  function addIconUrl() {
+    const url = iconUrlDraft.trim()
     if (!url) return
+    const parsed = z.string().url().safeParse(url)
+    if (!parsed.success) {
+      toast({ variant: 'destructive', title: 'URL de ícono inválida' })
+      return
+    }
+    setProductIcon(url)
+    setIconUrlDraft('')
+  }
 
-    if (imageUrls.length >= 4) {
-      toast({ variant: 'destructive', title: 'Solo puedes agregar hasta 4 imágenes' })
+  async function uploadIconImage(files: FileList | null) {
+    if (!files?.length) return
+    const file = files[0]
+    const formData = new FormData()
+    formData.append('files', file)
+    formData.append('productId', isNew ? 'new' : params.productId)
+
+    setUploadingIcon(true)
+    const res = await fetch('/api/admin/product-images', {
+      method: 'POST',
+      body: formData,
+    })
+    const result = await res.json().catch(() => ({}))
+    setUploadingIcon(false)
+
+    if (!res.ok) {
+      toast({ variant: 'destructive', title: result.error || 'No se pudo subir el ícono' })
       return
     }
 
+    if (result.urls?.[0]) {
+      setProductIcon(result.urls[0])
+      toast({ title: 'Ícono cargado' })
+    }
+  }
+
+  // Gallery handlers
+  function addGalleryUrl() {
+    const url = galleryUrlDraft.trim()
+    if (!url) return
+    if (galleryUrls.length >= 3) {
+      toast({ variant: 'destructive', title: 'Solo puedes agregar hasta 3 imágenes secundarias' })
+      return
+    }
     const parsed = z.string().url().safeParse(url)
     if (!parsed.success) {
       toast({ variant: 'destructive', title: 'URL de imagen inválida' })
       return
     }
-
-    setImageUrls((current) => [...current, url].slice(0, 4))
-    setImageUrlDraft('')
+    setGalleryUrls((current) => [...current, url].slice(0, 3))
+    setGalleryUrlDraft('')
   }
 
-  function removeImageUrl(index: number) {
-    setImageUrls((current) => current.filter((_, itemIndex) => itemIndex !== index))
+  function removeGalleryUrl(index: number) {
+    setGalleryUrls((current) => current.filter((_, idx) => idx !== index))
   }
 
-  async function uploadProductImages(files: FileList | null) {
+  async function uploadGalleryImages(files: FileList | null) {
     if (!files?.length) return
-    const remaining = 4 - imageUrls.length
-
+    const remaining = 3 - galleryUrls.length
     if (remaining <= 0) {
-      toast({ variant: 'destructive', title: 'Solo puedes agregar hasta 4 imágenes' })
+      toast({ variant: 'destructive', title: 'Solo puedes agregar hasta 3 imágenes secundarias' })
       return
     }
 
@@ -161,21 +211,21 @@ export default function ProductFormPage() {
     selectedFiles.forEach((file) => formData.append('files', file))
     formData.append('productId', isNew ? 'new' : params.productId)
 
-    setUploadingImages(true)
+    setUploadingGallery(true)
     const res = await fetch('/api/admin/product-images', {
       method: 'POST',
       body: formData,
     })
     const result = await res.json().catch(() => ({}))
-    setUploadingImages(false)
+    setUploadingGallery(false)
 
     if (!res.ok) {
       toast({ variant: 'destructive', title: result.error || 'No se pudieron subir las imágenes' })
       return
     }
 
-    setImageUrls((current) => [...current, ...(result.urls ?? [])].slice(0, 4))
-    toast({ title: 'Imágenes cargadas' })
+    setGalleryUrls((current) => [...current, ...(result.urls ?? [])].slice(0, 3))
+    toast({ title: 'Imágenes agregadas a la galería' })
   }
 
   return (
@@ -195,20 +245,121 @@ export default function ProductFormPage() {
       </div>
 
       <div style={panelStyle}>
-        <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <Field label="Nombre del producto *" error={errors.name?.message}>
             <input {...register('name')} placeholder="Ej: Netflix Premium" className="input-dark" style={{ width: '100%' }} />
           </Field>
 
-          <ImageManager
-            imageUrls={imageUrls}
-            imageUrlDraft={imageUrlDraft}
-            uploadingImages={uploadingImages}
-            onDraftChange={setImageUrlDraft}
-            onAddUrl={addImageUrl}
-            onRemove={removeImageUrl}
-            onUpload={uploadProductImages}
-          />
+          {/* Section 1: Product Icon */}
+          <div style={{ borderBottom: '1px solid var(--border2)', paddingBottom: '20px' }}>
+            <label style={labelStyle}>Ícono del Producto (Imagen Principal) *</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '16px', alignItems: 'center' }}>
+              <div style={{
+                ...imageSlotStyle,
+                border: '2px dashed var(--accent)',
+                background: 'rgba(92, 53, 176, 0.05)',
+                width: '100px',
+                height: '100px'
+              }}>
+                {productIcon ? (
+                  <>
+                    <img src={productIcon} alt="Ícono" loading="lazy" referrerPolicy="no-referrer" style={imagePreviewStyle} />
+                    <button type="button" onClick={() => setProductIcon('')} aria-label="Quitar ícono" style={removeImageButtonStyle}>
+                      <X style={{ width: 14, height: 14 }} />
+                    </button>
+                  </>
+                ) : (
+                  <ImageIcon style={{ width: '28px', height: '28px', color: 'var(--accent)' }} />
+                )}
+              </div>
+
+              <div style={{ display: 'grid', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px' }}>
+                  <input
+                    value={iconUrlDraft}
+                    onChange={(e) => setIconUrlDraft(e.target.value)}
+                    placeholder="https://cdn.ejemplo.com/icono.png"
+                    className="input-dark"
+                    style={{ width: '100%' }}
+                  />
+                  <button type="button" onClick={addIconUrl} style={secondaryButtonStyle(false)}>
+                    <Plus style={{ width: 16, height: 16 }} />
+                    URL
+                  </button>
+                </div>
+
+                <label style={uploadBoxStyle(uploadingIcon)}>
+                  {uploadingIcon ? <Loader2 className="animate-spin" /> : <Upload style={{ width: 17, height: 17 }} />}
+                  {uploadingIcon ? 'Subiendo...' : 'Subir ícono de la PC'}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={uploadingIcon}
+                    onChange={(e) => uploadIconImage(e.target.files)}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Product Gallery */}
+          <div>
+            <label style={labelStyle}>Galería de Imágenes Secundarias (Opcional, Máx. 3)</label>
+            <div style={{ display: 'grid', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px' }}>
+                <input
+                  value={galleryUrlDraft}
+                  onChange={(e) => setGalleryUrlDraft(e.target.value)}
+                  placeholder="https://cdn.ejemplo.com/imagen.png"
+                  className="input-dark"
+                  style={{ width: '100%' }}
+                />
+                <button type="button" onClick={addGalleryUrl} disabled={galleryUrls.length >= 3} style={secondaryButtonStyle(galleryUrls.length >= 3)}>
+                  <Plus style={{ width: 16, height: 16 }} />
+                  URL
+                </button>
+              </div>
+
+              <label style={uploadBoxStyle(galleryUrls.length >= 3 || uploadingGallery)}>
+                {uploadingGallery ? <Loader2 className="animate-spin" /> : <Upload style={{ width: 17, height: 17 }} />}
+                {uploadingGallery ? 'Subiendo...' : 'Subir imágenes de la PC'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  disabled={galleryUrls.length >= 3 || uploadingGallery}
+                  onChange={(e) => uploadGalleryImages(e.target.files)}
+                  style={{ display: 'none' }}
+                />
+              </label>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '10px' }}>
+                {Array.from({ length: 3 }).map((_, index) => {
+                  const url = galleryUrls[index]
+                  return (
+                    <div key={index} style={imageSlotStyle}>
+                      {url ? (
+                        <>
+                          <img src={url} alt="" loading="lazy" referrerPolicy="no-referrer" style={imagePreviewStyle} />
+                          <button type="button" onClick={() => removeGalleryUrl(index)} aria-label="Quitar imagen" style={removeImageButtonStyle}>
+                            <X style={{ width: 14, height: 14 }} />
+                          </button>
+                        </>
+                      ) : (
+                        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                          <ImageIcon style={{ width: '22px', height: '22px', color: 'var(--muted)' }} />
+                          <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--muted)' }}>
+                            Imagen {index + 1}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
 
           <div>
             <label style={labelStyle}>Categoría *</label>
@@ -219,20 +370,19 @@ export default function ProductFormPage() {
                   type="button"
                   onClick={() => setValue('category', cat.value)}
                   style={{
-                    padding: '12px 8px',
+                    background: category === cat.value ? 'var(--accent)' : 'var(--bg3)',
+                    color: category === cat.value ? 'white' : 'var(--muted)',
+                    border: '1px solid var(--border2)',
+                    padding: '12px 6px',
                     borderRadius: '8px',
-                    border: category === cat.value ? '2px solid var(--accent)' : '1px solid var(--border2)',
-                    background: category === cat.value ? 'rgba(124,58,237,0.1)' : 'var(--bg3)',
-                    color: category === cat.value ? 'var(--accent2)' : 'var(--muted)',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
                     cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '4px',
+                    transition: '0.2s',
                   }}
                 >
-                  <span style={{ fontSize: '0.78rem', fontWeight: 900 }}>{cat.code}</span>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 500 }}>{cat.label}</span>
+                  <span style={{ display: 'block', fontSize: '1.2rem', marginBottom: '4px' }}>{cat.code}</span>
+                  {cat.label}
                 </button>
               ))}
             </div>
@@ -242,59 +392,63 @@ export default function ProductFormPage() {
             <Field label="Precio (PEN) *" error={errors.price?.message}>
               <div style={{ position: 'relative' }}>
                 <span style={currencyStyle}>S/</span>
-                <input type="number" step="0.01" {...register('price')} className="input-dark" style={{ width: '100%', paddingLeft: '36px' }} />
+                <input
+                  type="number"
+                  step="0.01"
+                  {...register('price')}
+                  placeholder="29.90"
+                  className="input-dark"
+                  style={{ width: '100%', paddingLeft: '32px' }}
+                />
               </div>
             </Field>
 
-            <Field label="Duración (días) *" error={errors.duration_days?.message}>
-              <input type="number" {...register('duration_days')} className="input-dark" style={{ width: '100%' }} />
+            <Field label="Duración (Días) *" error={errors.duration_days?.message}>
+              <input
+                type="number"
+                {...register('duration_days')}
+                placeholder="30"
+                className="input-dark"
+                style={{ width: '100%' }}
+              />
             </Field>
           </div>
 
-          <Field label="Descripción del producto" error={errors.description?.message}>
+          <Field label="Características del servicio (Una por línea) *" error={errors.features?.message}>
             <textarea
-              {...register('description')}
-              placeholder="Escribe una breve descripción del producto o servicio..."
+              {...register('features')}
+              placeholder="Ej: Pantallas Ultra HD&#10;Garantía completa&#10;Cuenta personal"
               className="input-dark"
-              style={{
-                width: '100%',
-                minHeight: '80px',
-                resize: 'vertical',
-                fontFamily: "'Space Grotesk', sans-serif",
-              }}
+              rows={4}
+              style={{ width: '100%' }}
             />
           </Field>
 
-          <Field label="Características (una por linea)">
+          <Field label="Descripción adicional (Opcional)" error={errors.description?.message}>
             <textarea
-              {...register('features')}
-              placeholder={'Calidad 4K\nCompartido hasta 5\nDescarga offline'}
+              {...register('description')}
+              placeholder="Escribe detalles adicionales..."
               className="input-dark"
-              style={{
-                width: '100%',
-                minHeight: '120px',
-                resize: 'vertical',
-                fontFamily: "'Space Grotesk', sans-serif",
-              }}
+              rows={3}
+              style={{ width: '100%' }}
             />
           </Field>
 
           <div style={statusPanelStyle}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {active ? (
-                <Eye style={{ width: '20px', height: '20px', color: 'var(--green)' }} />
-              ) : (
-                <EyeOff style={{ width: '20px', height: '20px', color: 'var(--muted)' }} />
-              )}
-              <div>
-                <div style={{ fontWeight: 500, color: 'var(--text)', fontSize: '0.9rem' }}>Producto activo</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                  {active ? 'Visible en el catálogo público' : 'Oculto del catálogo'}
-                </div>
-              </div>
+            <div>
+              <strong style={{ display: 'block', fontSize: '0.9rem', color: 'var(--text)' }}>
+                {active ? 'Producto visible' : 'Producto oculto'}
+              </strong>
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                {active ? 'Los clientes pueden comprarlo en la tienda' : 'El producto no aparecerá en el catálogo'}
+              </span>
             </div>
-            <label style={{ position: 'relative', width: '48px', height: '26px' }}>
-              <input type="checkbox" {...register('active')} style={{ opacity: 0, width: 0, height: 0 }} />
+            <label style={{ position: 'relative', display: 'inline-block', width: '48px', height: '26px' }}>
+              <input
+                type="checkbox"
+                {...register('active')}
+                style={{ opacity: 0, width: 0, height: 0 }}
+              />
               <span style={{
                 position: 'absolute',
                 cursor: 'pointer',
@@ -333,84 +487,6 @@ function Field({ label, error, children }: { label: string; error?: string; chil
       <label style={labelStyle}>{label}</label>
       {children}
       {error && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '4px', display: 'block' }}>{error}</span>}
-    </div>
-  )
-}
-
-function ImageManager({
-  imageUrls,
-  imageUrlDraft,
-  uploadingImages,
-  onDraftChange,
-  onAddUrl,
-  onRemove,
-  onUpload,
-}: {
-  imageUrls: string[]
-  imageUrlDraft: string
-  uploadingImages: boolean
-  onDraftChange: (value: string) => void
-  onAddUrl: () => void
-  onRemove: (index: number) => void
-  onUpload: (files: FileList | null) => void
-}) {
-  const atLimit = imageUrls.length >= 4
-
-  return (
-    <div>
-      <label style={labelStyle}>Imágenes del producto</label>
-      <div style={{ display: 'grid', gap: '12px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px' }}>
-          <input
-            value={imageUrlDraft}
-            onChange={(event) => onDraftChange(event.target.value)}
-            placeholder="https://cdn.ejemplo.com/imagen.png"
-            className="input-dark"
-            style={{ width: '100%' }}
-          />
-          <button type="button" onClick={onAddUrl} disabled={atLimit} style={secondaryButtonStyle(atLimit)}>
-            <Plus style={{ width: 16, height: 16 }} />
-            URL
-          </button>
-        </div>
-
-        <label style={uploadBoxStyle(atLimit || uploadingImages)}>
-          {uploadingImages ? <Loader2 className="animate-spin" /> : <Upload style={{ width: 17, height: 17 }} />}
-          {uploadingImages ? 'Subiendo imágenes...' : 'Cargar desde la computadora'}
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            multiple
-            disabled={atLimit || uploadingImages}
-            onChange={(event) => onUpload(event.target.files)}
-            style={{ display: 'none' }}
-          />
-        </label>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '10px' }}>
-          {Array.from({ length: 4 }).map((_, index) => {
-            const url = imageUrls[index]
-            return (
-              <div key={index} style={imageSlotStyle}>
-                {url ? (
-                  <>
-                    <img src={url} alt="" loading="lazy" referrerPolicy="no-referrer" style={imagePreviewStyle} />
-                    <button type="button" onClick={() => onRemove(index)} aria-label="Quitar imagen" style={removeImageButtonStyle}>
-                      <X style={{ width: 14, height: 14 }} />
-                    </button>
-                  </>
-                ) : (
-                  <ImageIcon style={{ width: '24px', height: '24px', color: 'var(--muted)' }} />
-                )}
-              </div>
-            )
-          })}
-        </div>
-
-        <p style={{ color: 'var(--muted)', fontSize: '0.75rem', margin: 0 }}>
-          Puedes combinar URLs e imágenes cargadas. Máximo 4 imágenes JPG, PNG o WEBP de hasta 2 MB cada una.
-        </p>
-      </div>
     </div>
   )
 }
@@ -519,36 +595,38 @@ function secondaryButtonStyle(disabled: boolean) {
 
 function uploadBoxStyle(disabled: boolean) {
   return {
-    minHeight: '44px',
-    border: '1px dashed var(--border2)',
-    borderRadius: '10px',
-    background: 'var(--bg3)',
-    color: 'var(--text)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '8px',
-    fontSize: '0.85rem',
-    fontWeight: 700,
+    height: '38px',
+    borderRadius: '8px',
+    border: '1px dashed var(--border2)',
+    background: 'var(--bg3)',
+    color: disabled ? 'var(--muted)' : 'var(--text)',
+    fontSize: '0.82rem',
+    fontWeight: 500,
     cursor: disabled ? 'not-allowed' : 'pointer',
-    opacity: disabled ? 0.65 : 1,
+    opacity: disabled ? 0.6 : 1,
   }
 }
 
-function submitStyle(loading: boolean) {
+function submitStyle(disabled: boolean) {
   return {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '8px',
-    padding: '14px 24px',
+    width: '100%',
+    height: '46px',
     borderRadius: '8px',
-    background: loading ? 'var(--muted)' : 'linear-gradient(135deg, var(--accent), var(--accent2))',
-    color: 'white',
     border: 'none',
-    fontSize: '0.95rem',
-    fontWeight: 600,
-    cursor: loading ? 'not-allowed' : 'pointer',
-    opacity: loading ? 0.7 : 1,
+    background: 'var(--accent)',
+    color: 'white',
+    fontSize: '0.9rem',
+    fontWeight: 700,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.7 : 1,
+    transition: '0.2s',
   }
 }

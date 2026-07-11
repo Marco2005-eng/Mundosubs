@@ -5,11 +5,13 @@ import Link from 'next/link'
 import { ArrowLeft, Banknote, BarChart3, Download, ReceiptText, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 import { formatPEN } from '@/lib/utils'
 import { AdminFinanceExpenseForm } from '@/components/AdminFinanceExpenseForm'
+import { AdminFinancesExportButtons } from '@/components/AdminFinancesExportButtons'
 
 type SearchParams = {
   period?: string
   from?: string
   to?: string
+  category?: string
 }
 
 type SeriesPoint = {
@@ -152,7 +154,7 @@ export default async function AdminFinancesPage({ searchParams }: { searchParams
       .order('created_at', { ascending: true }),
     supabase
       .from('orders')
-      .select('id, amount, created_at')
+      .select('id, amount, created_at, product_id, products(name, category)')
       .eq('status', 'pending')
       .gte('created_at', fromIso)
       .lte('created_at', toIso),
@@ -165,8 +167,16 @@ export default async function AdminFinancesPage({ searchParams }: { searchParams
   ])
 
   const expensesError = expensesResult.error
-  const expenses = expensesError ? [] : (expensesResult.data ?? [])
-  const approvedRows = approvedOrders ?? []
+  let expenses = expensesError ? [] : (expensesResult.data ?? [])
+
+  const selectedCategory = searchParams.category || ''
+
+  let approvedRows = approvedOrders ?? []
+  if (selectedCategory) {
+    approvedRows = approvedRows.filter((order: any) => order.products?.category === selectedCategory)
+    expenses = []
+  }
+
   const profileIds = Array.from(new Set(approvedRows.map((order: any) => order.user_id).filter(Boolean)))
   const { data: profiles } = profileIds.length
     ? await supabase.from('profiles').select('id, email, full_name').in('id', profileIds)
@@ -176,7 +186,11 @@ export default async function AdminFinancesPage({ searchParams }: { searchParams
     ...order,
     users: profileMap.get(order.user_id) ?? null,
   }))
-  const pending = pendingOrders ?? []
+
+  let pending = pendingOrders ?? []
+  if (selectedCategory) {
+    pending = pending.filter((order: any) => order.products?.category === selectedCategory)
+  }
 
   const totalIncome = orders.reduce((sum, order: any) => sum + numberValue(order.amount), 0)
   const totalExpenses = expenses.reduce((sum, expense: any) => sum + numberValue(expense.amount), 0)
@@ -217,11 +231,13 @@ export default async function AdminFinancesPage({ searchParams }: { searchParams
   const exportParams = new URLSearchParams({
     from: toInputDate(range.from),
     to: toInputDate(range.to),
+    ...(selectedCategory ? { category: selectedCategory } : {}),
   })
   const excelParams = new URLSearchParams({
     from: toInputDate(range.from),
     to: toInputDate(range.to),
     format: 'xls',
+    ...(selectedCategory ? { category: selectedCategory } : {}),
   })
 
   return (
@@ -236,76 +252,57 @@ export default async function AdminFinancesPage({ searchParams }: { searchParams
               Finanzas
             </h1>
             <p style={{ color: 'var(--muted)', fontSize: '0.86rem' }}>
-              Reporte {rangeLabel}
+              Reporte {rangeLabel} {selectedCategory ? `(Categoría: ${selectedCategory})` : ''}
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <Link href={`/api/admin/finance-report?${excelParams.toString()}`} style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          color: 'var(--muted)',
-          border: '1px solid var(--border2)',
-          background: 'var(--bg3)',
-          borderRadius: '8px',
-          padding: '9px 12px',
-          fontSize: '0.82rem',
-          fontWeight: 700,
-          textDecoration: 'none'
-        }}>
-          <Download style={{ width: 16, height: 16 }} />
-          Exportar Excel
-        </Link>
-        <Link href={`/api/admin/finance-report?${exportParams.toString()}`} style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          color: 'var(--muted)',
-          border: '1px solid var(--border2)',
-          background: 'var(--bg3)',
-          borderRadius: '8px',
-          padding: '9px 12px',
-          fontSize: '0.82rem',
-          fontWeight: 700,
-          textDecoration: 'none'
-        }}>
-          CSV
-        </Link>
-        <Link href={`/admin/finances/print?${exportParams.toString()}`} style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          color: 'var(--text)',
-          border: '1px solid var(--border2)',
-          background: 'var(--bg3)',
-          borderRadius: '8px',
-          padding: '9px 12px',
-          fontSize: '0.82rem',
-          fontWeight: 700,
-          textDecoration: 'none'
-        }}>
-          PDF
-        </Link>
-        </div>
+        <AdminFinancesExportButtons
+          excelUrl={`/api/admin/finance-report?${excelParams.toString()}`}
+          csvUrl={`/api/admin/finance-report?${exportParams.toString()}`}
+          orders={orders}
+          expenses={expenses}
+          series={series}
+          totalIncome={totalIncome}
+          totalExpenses={totalExpenses}
+          profit={profit}
+          averageTicket={averageTicket}
+          pendingAmount={pendingAmount}
+          discountAmount={discountAmount}
+          fromDateStr={toInputDate(range.from)}
+          toDateStr={toInputDate(range.to)}
+          selectedCategory={selectedCategory}
+        />
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '18px' }}>
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '18px', alignItems: 'center' }}>
         {[
           { value: 'week', label: 'Semanal' },
           { value: 'month', label: 'Mensual' },
           { value: 'year', label: 'Anual' },
-        ].map((item) => (
-          <Link key={item.value} href={`/admin/finances?period=${item.value}`} style={filterStyle(range.period === item.value)}>
-            {item.label}
-          </Link>
-        ))}
-        <form style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+        ].map((item) => {
+          const params = new URLSearchParams()
+          params.set('period', item.value)
+          if (selectedCategory) params.set('category', selectedCategory)
+          return (
+            <Link key={item.value} href={`/admin/finances?${params.toString()}`} style={filterStyle(range.period === item.value)}>
+              {item.label}
+            </Link>
+          )
+        })}
+        <form style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }} method="GET" action="/admin/finances">
           <input type="hidden" name="period" value="custom" />
           <input name="from" type="date" defaultValue={toInputDate(range.from)} className="input-dark" style={{ minHeight: 38 }} />
           <input name="to" type="date" defaultValue={toInputDate(range.to)} className="input-dark" style={{ minHeight: 38 }} />
-          <button className="btn-secondary" style={{ minHeight: 38 }}>Generar</button>
+          <select name="category" defaultValue={selectedCategory} className="input-dark" style={{ minHeight: 38, background: 'var(--bg3)', color: 'var(--text)', fontWeight: 'bold' }}>
+            <option value="">Todas las categorías</option>
+            <option value="streaming">Streaming</option>
+            <option value="music">Música</option>
+            <option value="game">Juegos</option>
+            <option value="software">Software</option>
+            <option value="license">Licencias</option>
+          </select>
+          <button className="btn-secondary" style={{ minHeight: 38 }}>Filtrar</button>
         </form>
       </div>
 
